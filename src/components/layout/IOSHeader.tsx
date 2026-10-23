@@ -73,7 +73,7 @@ export default function IOSHeader({
           <span className="h-3 w-px bg-white/20" />
           <div className="flex items-center gap-1.5 text-ios-green font-medium">
             <span className="w-2 h-2 rounded-full bg-ios-green animate-pulse" />
-            <span>Terminal Active</span>
+            <span>System Online</span>
           </div>
         </div>
 
@@ -108,11 +108,8 @@ export default function IOSHeader({
             <BookOpen className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-lg font-bold tracking-tight text-white">
               Billing Ledger
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white/70">
-                iOS Terminal
-              </span>
             </h1>
             <p className="text-xs text-ios-gray">Daily Operational Cash & Bank Journal</p>
           </div>

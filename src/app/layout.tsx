@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Daily Billing Ledger - iOS Executive Terminal',
-  description: 'Enterprise iOS-themed Daily Billing, Cash-Bank Operations, and Ledger Reconciliation Terminal.',
+  title: 'Daily Billing Ledger - Financial Operations',
+  description: 'Daily Billing, Cash-Bank Operations, and Ledger Reconciliation.',
 };
 
 export default function RootLayout({

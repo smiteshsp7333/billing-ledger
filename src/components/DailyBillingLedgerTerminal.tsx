@@ -78,7 +78,7 @@ export default function DailyBillingLedgerPage() {
   if (!isMounted || !store) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white text-xs">
-        Loading iOS Billing Terminal...
+        Loading Daily Billing Ledger...
       </div>
     );
   }
