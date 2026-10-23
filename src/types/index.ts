@@ -120,3 +120,11 @@ export interface LedgerStoreData {
   seqPayment: number;
   seqInvoice: number;
 }
+
+export interface UserSession {
+  email: string;
+  name: string;
+  role: 'ADMIN' | 'ACCOUNTANT' | 'CASHIER';
+  token: string;
+  loggedInAt: string;
+}

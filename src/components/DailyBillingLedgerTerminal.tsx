@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import React, { useState, useEffect } from 'react';
 import {
   ActiveTab,
@@ -12,6 +14,7 @@ import {
   DenominationCount,
 } from '../types';
 import { loadStore, saveStore, computePartyLedger } from '../lib/store';
+import { UserSession } from '../types';
 import IOSHeader from './layout/IOSHeader';
 import ReceiptModal from './modals/ReceiptModal';
 import PaymentModal from './modals/PaymentModal';
@@ -44,7 +47,9 @@ import {
 
 export default function DailyBillingLedgerPage() {
   const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
   const [store, setStore] = useState<LedgerStoreData | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('DAYBOOK');
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().slice(0, 10)
@@ -71,9 +76,38 @@ export default function DailyBillingLedgerPage() {
 
   useEffect(() => {
     setIsMounted(true);
+
+    if (typeof window !== 'undefined') {
+      const rawUser = localStorage.getItem('billing_ledger_session');
+      if (!rawUser) {
+        router.replace('/login');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(rawUser);
+        if (parsed && parsed.email) {
+          setCurrentUser(parsed);
+        } else {
+          router.replace('/login');
+          return;
+        }
+      } catch (e) {
+        localStorage.removeItem('billing_ledger_session');
+        router.replace('/login');
+        return;
+      }
+    }
+
     const loaded = loadStore();
     setStore(loaded);
-  }, []);
+  }, [router]);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('billing_ledger_session');
+    }
+    router.replace('/login');
+  };
 
   if (!isMounted || !store) {
     return (

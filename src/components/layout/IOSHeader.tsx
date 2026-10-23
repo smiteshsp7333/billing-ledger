@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ActiveTab } from '../../types';
+import { ActiveTab, UserSession } from '../../types';
 import {
   Calendar,
   Plus,
@@ -13,6 +13,8 @@ import {
   BarChart3,
   BookOpen,
   ShieldCheck,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 interface IOSHeaderProps {
@@ -24,6 +26,8 @@ interface IOSHeaderProps {
   selectedDate: string;
   setSelectedDate: (date: string) => void;
   isDayLocked: boolean;
+  currentUser?: UserSession | null;
+  onLogout?: () => void;
 }
 
 export default function IOSHeader({
@@ -35,6 +39,8 @@ export default function IOSHeader({
   selectedDate,
   setSelectedDate,
   isDayLocked,
+  currentUser,
+  onLogout,
 }: IOSHeaderProps) {
   const [timeStr, setTimeStr] = useState('');
 
