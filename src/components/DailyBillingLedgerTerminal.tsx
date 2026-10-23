@@ -344,6 +344,8 @@ export default function DailyBillingLedgerPage() {
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
         isDayLocked={Boolean(currentDay.isLocked)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-6">

@@ -83,7 +83,7 @@ export default function IOSHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-[11px] text-white/80 font-medium">
             <Calendar className="w-3.5 h-3.5 text-ios-blue" />
             <input
@@ -103,6 +103,27 @@ export default function IOSHeader({
               <ShieldCheck className="w-3 h-3" /> Day Open
             </span>
           )}
+
+          {/* User Profile & Logout Button */}
+          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white">
+              <User className="w-3.5 h-3.5 text-[#0a84ff]" />
+              <span className="font-semibold text-white/90">{currentUser?.name || 'Administrator'}</span>
+              <span className="text-[10px] font-bold text-[#8e8e93] px-1.5 py-0.5 rounded bg-white/10 uppercase">
+                {currentUser?.role || 'Admin'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onLogout}
+              title="Sign Out of Billing Ledger"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ff453a]/15 hover:bg-[#ff453a]/25 border border-[#ff453a]/30 text-xs font-semibold text-[#ff453a] transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </div>
 
