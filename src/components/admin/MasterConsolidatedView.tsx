@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CompanySummary, GroupGrandTotal } from '../../types';
+import { SYSTEM_ACCOUNTS } from '../../lib/companies';
 import {
   Building2,
   TrendingUp,
@@ -15,6 +16,10 @@ import {
   Calendar,
   Percent,
   CalendarDays,
+  Key,
+  Copy,
+  Check,
+  X,
 } from 'lucide-react';
 
 interface MasterConsolidatedViewProps {
@@ -29,6 +34,7 @@ interface MasterConsolidatedViewProps {
 }
 
 export default function MasterConsolidatedView({
+
   selectedDate,
   setSelectedDate,
   activeView,
@@ -38,6 +44,19 @@ export default function MasterConsolidatedView({
   selectedCompanyFilter,
   setSelectedCompanyFilter,
 }: MasterConsolidatedViewProps) {
+  const [showAccountsModal, setShowAccountsModal] = React.useState(false);
+  const [copiedId, setCopiedId] = React.useState<string | null>(null);
+
+  const handleCopy = (id: string, text: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  const companyAccounts = SYSTEM_ACCOUNTS.filter((acc) => acc.role === 'COMPANY_USER');
+
   const filteredSummaries = selectedCompanyFilter
     ? summaries.filter((s) => s.company.id === selectedCompanyFilter)
     : summaries;
@@ -217,6 +236,22 @@ export default function MasterConsolidatedView({
             </span>
           </div>
 
+          
+          {/* Manage Accounts Button for Super Admin */}
+          <button
+            type="button"
+            onClick={() => setShowAccountsModal(true)}
+            className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center justify-between transition-all text-left"
+          >
+            <span className="flex items-center gap-2">
+              <Key className="w-3.5 h-3.5 text-[#0a84ff]" />
+              <span>Company Passwords</span>
+            </span>
+            <span className="text-[10px] bg-[#0a84ff]/20 text-[#0a84ff] px-1.5 py-0.5 rounded font-mono font-bold">
+              Manage
+            </span>
+          </button>
+          
           {/* "All 9 Companies" master button */}
           <button
             type="button"
@@ -588,6 +623,102 @@ export default function MasterConsolidatedView({
           </div>
         </div>
       </div>
+    
+      {/* Super Admin Modal: Company Accounts & Passwords Directory */}
+      {showAccountsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-3xl bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-2xl backdrop-blur-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#0a84ff]/20 text-[#0a84ff] flex items-center justify-center border border-[#0a84ff]/30">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                    Company Accounts & Credentials
+                    <span className="text-[10px] font-bold text-[#30d158] bg-[#30d158]/15 px-2 py-0.5 rounded-full">
+                      Super Admin Private
+                    </span>
+                  </h2>
+                  <p className="text-xs text-[#8e8e93]">
+                    Share these credentials with operating unit branch managers to log into their respective portals.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAccountsModal(false)}
+                type="button"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#8e8e93] hover:text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-white/5 border-b border-white/10 text-[#8e8e93] uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Company Name</th>
+                    <th className="py-3 px-3">Username</th>
+                    <th className="py-3 px-3">Email Address</th>
+                    <th className="py-3 px-3">Access Password</th>
+                    <th className="py-3 px-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {companyAccounts.map((acc) => {
+                    const isCopied = copiedId === acc.id;
+                    const credText = "Company: " + acc.name + "\nUsername: " + acc.username + "\nEmail: " + acc.email + "\nPassword: " + acc.pass;
+                    return (
+                      <tr key={acc.id} className="hover:bg-white/[0.03] transition-colors">
+                        <td className="py-3 px-4">
+                          <span className="font-bold text-white block">{acc.name}</span>
+                          <span className="text-[10px] text-[#8e8e93]">{acc.id}</span>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-white font-semibold">{acc.username}</td>
+                        <td className="py-3 px-3 font-mono text-[#8e8e93] text-[11px]">{acc.email}</td>
+                        <td className="py-3 px-3 font-mono font-bold text-[#30d158]">{acc.pass}</td>
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(acc.id, credText)}
+                            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-medium border border-white/10 transition-colors inline-flex items-center gap-1.5"
+                          >
+                            {isCopied ? (
+                              <>
+                                <Check className="w-3 h-3 text-[#30d158]" />
+                                <span className="text-[#30d158]">Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-[#0a84ff]" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between">
+              <span className="text-[11px] text-[#8e8e93]">
+                Total 9 Registered Operating Entities
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAccountsModal(false)}
+                className="px-5 py-2 rounded-xl bg-[#0a84ff] text-white text-xs font-semibold hover:bg-[#0a84ff]/90 transition-all cursor-pointer"
+              >
+                Close Directory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
