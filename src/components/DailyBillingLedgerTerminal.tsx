@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -33,7 +33,7 @@ export default function DailyBillingLedgerTerminal() {
       }
       try {
         const parsed = JSON.parse(rawUser);
-        if (parsed && parsed.email) {
+        if (parsed && (parsed.email || parsed.username)) {
           setCurrentUser(parsed);
         } else {
           router.replace('/login');
@@ -85,8 +85,6 @@ export default function DailyBillingLedgerTerminal() {
   return (
     <div className="min-h-screen bg-black text-white antialiased pb-16 selection:bg-[#0a84ff] selection:text-white">
       <ExecutiveHeader
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
         activeView={activeView}
         setActiveView={setActiveView}
         currentUser={currentUser}
@@ -103,6 +101,7 @@ export default function DailyBillingLedgerTerminal() {
         ) : (
           <MasterConsolidatedView
             selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
             activeView={activeView}
             summaries={summaries}
             grandTotal={grandTotal}
