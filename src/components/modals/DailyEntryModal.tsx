@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { CompanyDailyEntry } from '../../types';
@@ -25,12 +25,9 @@ export default function DailyEntryModal({
   const [companyId, setCompanyId] = useState(defaultCompanyId || GROUP_COMPANIES[0].id);
   const [date, setDate] = useState(selectedDate);
   const [todayBilling, setTodayBilling] = useState('');
-  const [todayPayment, setTodayPayment] = useState('');
-  const [purchaseValue, setPurchaseValue] = useState('');
-  const [paymentMode, setPaymentMode] = useState<'BANK_TRANSFER' | 'UPI' | 'CASH' | 'CHEQUE'>('BANK_TRANSFER');
+  const [gstPayment, setGstPayment] = useState('');
+  const [otherPayment, setOtherPayment] = useState('');
   const [paymentReceivedAt, setPaymentReceivedAt] = useState('');
-  const [notes, setNotes] = useState('');
-  const [submittedBy, setSubmittedBy] = useState('Super Admin');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -53,26 +50,21 @@ export default function DailyEntryModal({
   useEffect(() => {
     if (existingEntry) {
       setTodayBilling(String(existingEntry.todayBilling));
-      setTodayPayment(String(existingEntry.todayPayment));
-      setPurchaseValue(String(existingEntry.purchaseValue || '0'));
-      setPaymentMode(existingEntry.paymentMode || 'BANK_TRANSFER');
+      setGstPayment(String(existingEntry.gstPayment ?? Math.round(existingEntry.todayPayment * 0.75)));
+      setOtherPayment(String(existingEntry.otherPayment ?? Math.round(existingEntry.todayPayment * 0.25)));
       setPaymentReceivedAt(existingEntry.paymentReceivedAt || getDefaultDateTime(existingEntry.date));
-      setNotes(existingEntry.notes || '');
-      setSubmittedBy(existingEntry.submittedBy || 'Super Admin');
     } else {
       setTodayBilling('');
-      setTodayPayment('');
-      setPurchaseValue('0');
-      setPaymentMode('BANK_TRANSFER');
+      setGstPayment('');
+      setOtherPayment('');
       setPaymentReceivedAt(getDefaultDateTime(date));
-      setNotes('');
-      setSubmittedBy('Super Admin');
     }
   }, [existingEntry, date, isOpen]);
 
   if (!isOpen) return null;
 
   const selectedCompany = GROUP_COMPANIES.find((c) => c.id === companyId);
+  const totalPayment = (parseFloat(gstPayment) || 0) + (parseFloat(otherPayment) || 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,38 +80,23 @@ export default function DailyEntryModal({
       return;
     }
 
-    if (!todayPayment.trim()) {
-      setError('Today Payment / Collection is mandatory.');
+    if (!gstPayment.trim()) {
+      setError('GST Collection is mandatory (enter 0 if nil).');
       return;
     }
-    const pay = parseFloat(todayPayment);
-    if (isNaN(pay) || pay < 0) {
-      setError('Please enter a valid Today Payment / Collection figure (0 or more).');
-      return;
-    }
-
-    if (!purchaseValue.trim()) {
-      setError('Purchase / Outward Value is mandatory (Enter 0 if none).');
-      return;
-    }
-    const pur = parseFloat(purchaseValue);
-    if (isNaN(pur) || pur < 0) {
-      setError('Please enter a valid Purchase / Outward value.');
+    const gst = parseFloat(gstPayment);
+    if (isNaN(gst) || gst < 0) {
+      setError('Please enter a valid GST Collection figure.');
       return;
     }
 
-    if (!paymentReceivedAt.trim()) {
-      setError('Payment Received Date & Time is mandatory.');
+    if (!otherPayment.trim()) {
+      setError('Others Collection is mandatory (enter 0 if nil).');
       return;
     }
-
-    if (!notes.trim()) {
-      setError('Day Notes / Narration is mandatory.');
-      return;
-    }
-
-    if (!submittedBy.trim()) {
-      setError('Operator / Submitter Name is mandatory.');
+    const other = parseFloat(otherPayment);
+    if (isNaN(other) || other < 0) {
+      setError('Please enter a valid Others Collection figure.');
       return;
     }
 
@@ -130,12 +107,11 @@ export default function DailyEntryModal({
       companyName: selectedCompany ? selectedCompany.name : companyId,
       date,
       todayBilling: bill,
-      todayPayment: pay,
-      purchaseValue: pur,
-      paymentMode,
-      paymentReceivedAt: paymentReceivedAt.trim(),
-      notes: notes.trim(),
-      submittedBy: submittedBy.trim(),
+      gstPayment: gst,
+      otherPayment: other,
+      todayPayment: gst + other,
+      paymentReceivedAt: paymentReceivedAt.trim() || getDefaultDateTime(date),
+      submittedBy: 'Super Admin',
       submittedAt: new Date().toISOString(),
     });
 
@@ -153,13 +129,13 @@ export default function DailyEntryModal({
             </div>
             <div>
               <h2 className="text-lg font-bold text-white tracking-tight">Record Daily Entry</h2>
-              <p className="text-xs text-[#8e8e93]">All fields are mandatory for executive audit</p>
+              <p className="text-xs text-[#8e8e93]">Super Admin Manual Console</p>
             </div>
           </div>
           <button
             onClick={onClose}
             type="button"
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#8e8e93] hover:text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#8e8e93] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -206,7 +182,7 @@ export default function DailyEntryModal({
             </div>
           </div>
 
-          {/* Today Billing & Today Payment */}
+          {/* Today Billing & Total Payment */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block font-semibold text-white/90 mb-1.5">
@@ -230,42 +206,39 @@ export default function DailyEntryModal({
 
             <div>
               <label className="block font-semibold text-white/90 mb-1.5">
-                Today Payment / Collection (₹) *
+                Total Collection (Auto-Calculated)
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#30d158] font-medium text-sm">
                   ₹
                 </span>
                 <input
-                  type="number"
-                  step="1"
-                  value={todayPayment}
-                  onChange={(e) => setTodayPayment(e.target.value)}
-                  placeholder="0"
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[#30d158] font-mono text-base font-bold focus:outline-none focus:border-[#30d158] transition-all"
-                  required
+                  type="text"
+                  readOnly
+                  value={totalPayment.toLocaleString('en-IN')}
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-[#30d158]/10 border border-[#30d158]/30 text-[#30d158] font-mono text-base font-bold focus:outline-none cursor-default"
                 />
               </div>
             </div>
           </div>
 
-          {/* Purchase Outward & Payment Mode */}
+          {/* GST Collection & Others */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block font-semibold text-white/90 mb-1.5">
-                Purchase / Outward Value (₹) *
+                GST Collection (₹) *
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8e8e93] font-medium text-sm">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#0a84ff] font-medium text-sm">
                   ₹
                 </span>
                 <input
                   type="number"
                   step="1"
-                  value={purchaseValue}
-                  onChange={(e) => setPurchaseValue(e.target.value)}
+                  value={gstPayment}
+                  onChange={(e) => setGstPayment(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#0a84ff] transition-all"
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-sm font-bold focus:outline-none focus:border-[#0a84ff] transition-all"
                   required
                 />
               </div>
@@ -273,65 +246,36 @@ export default function DailyEntryModal({
 
             <div>
               <label className="block font-semibold text-white/90 mb-1.5">
-                Payment Mode *
+                Others (₹) *
               </label>
-              <select
-                value={paymentMode}
-                onChange={(e) => setPaymentMode(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#2c2c2e] border border-white/10 text-white font-semibold focus:outline-none focus:border-[#0a84ff] transition-all"
-                required
-              >
-                <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
-                <option value="UPI">UPI / QR Transfer</option>
-                <option value="CHEQUE">Cheque Clearance</option>
-                <option value="CASH">Cash Deposit</option>
-              </select>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#bf5af2] font-medium text-sm">
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  step="1"
+                  value={otherPayment}
+                  onChange={(e) => setOtherPayment(e.target.value)}
+                  placeholder="0"
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-sm font-bold focus:outline-none focus:border-[#0a84ff] transition-all"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          {/* Payment Received Date & Time & Submitter */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block font-semibold text-white/90 mb-1.5">
-                Payment Received Date & Time *
-              </label>
-              <input
-                type="text"
-                value={paymentReceivedAt}
-                onChange={(e) => setPaymentReceivedAt(e.target.value)}
-                placeholder="e.g. 23-10-2026, 04:15 PM"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono focus:outline-none focus:border-[#0a84ff] transition-all"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-white/90 mb-1.5">
-                Recorded By / Operator *
-              </label>
-              <input
-                type="text"
-                value={submittedBy}
-                onChange={(e) => setSubmittedBy(e.target.value)}
-                placeholder="Super Admin / Operator"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0a84ff] transition-all"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Remarks */}
+          {/* Payment Received Date & Time */}
           <div>
             <label className="block font-semibold text-white/90 mb-1.5">
-              Day Notes / Narration *
+              Payment Received Date &amp; Time
             </label>
             <input
               type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Cleared via RTGS from principal client"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#0a84ff] transition-all"
-              required
+              value={paymentReceivedAt}
+              onChange={(e) => setPaymentReceivedAt(e.target.value)}
+              placeholder="e.g. 23-10-2026, 04:15 PM"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-mono focus:outline-none focus:border-[#0a84ff] transition-all"
             />
           </div>
 
@@ -340,7 +284,7 @@ export default function DailyEntryModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-white/10 text-[#8e8e93] hover:text-white hover:bg-white/5 transition-all"
+              className="px-4 py-2.5 rounded-xl border border-white/10 text-[#8e8e93] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
             >
               Cancel
             </button>
@@ -349,7 +293,7 @@ export default function DailyEntryModal({
               className="px-6 py-2.5 rounded-xl bg-[#30d158] hover:bg-[#30d158]/90 text-white font-semibold shadow-lg shadow-[#30d158]/20 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              <span>Save & Publish</span>
+              <span>Save &amp; Publish</span>
             </button>
           </div>
         </form>

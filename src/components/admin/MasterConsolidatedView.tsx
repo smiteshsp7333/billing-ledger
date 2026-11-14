@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { CompanySummary, GroupGrandTotal } from '../../types';
@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Calendar,
   Percent,
-  CalendarDays,
   Key,
   Copy,
   Check,
@@ -34,7 +33,6 @@ interface MasterConsolidatedViewProps {
 }
 
 export default function MasterConsolidatedView({
-
   selectedDate,
   setSelectedDate,
   activeView,
@@ -61,17 +59,48 @@ export default function MasterConsolidatedView({
     ? summaries.filter((s) => s.company.id === selectedCompanyFilter)
     : summaries;
 
-  const dailyRecoveryRate =
-    grandTotal.todayBilling > 0
-      ? ((grandTotal.todayPayment / grandTotal.todayBilling) * 100).toFixed(1)
-      : '0.0';
+  const isIndividualView = Boolean(selectedCompanyFilter && filteredSummaries.length === 1);
+  const singleSummary = isIndividualView ? filteredSummaries[0] : null;
 
   const isMonthly = activeView === 'MONTHLY';
   const monthName = new Date(selectedDate).toLocaleString('default', { month: 'long', year: 'numeric' });
 
+  // Dynamic footer and metric totals: when filtered to single company, show single company totals; otherwise show grandTotal
+  const displayFooterTotal = singleSummary
+    ? {
+        label: 'TOTAL - ' + singleSummary.company.name.toUpperCase(),
+        todayBilling: singleSummary.todayBilling,
+        todayGstPayment: singleSummary.todayGstPayment || 0,
+        todayOtherPayment: singleSummary.todayOtherPayment || 0,
+        todayPayment: singleSummary.todayPayment,
+        monthBilling: singleSummary.monthBilling,
+        monthGstPayment: singleSummary.monthGstPayment || 0,
+        monthOtherPayment: singleSummary.monthOtherPayment || 0,
+        monthPayment: singleSummary.monthPayment,
+        netDifference: singleSummary.netDifference,
+        statusText: singleSummary.hasEntryToday ? 'Submitted' : 'Pending',
+        collectionRate: singleSummary.collectionRate,
+        avgDailyBilling: singleSummary.avgDailyBilling,
+      }
+    : {
+        label: 'GRAND TOTAL (ALL COMPANIES)',
+        todayBilling: grandTotal.todayBilling,
+        todayGstPayment: grandTotal.todayGstPayment || 0,
+        todayOtherPayment: grandTotal.todayOtherPayment || 0,
+        todayPayment: grandTotal.todayPayment,
+        monthBilling: grandTotal.monthBilling,
+        monthGstPayment: grandTotal.monthGstPayment || 0,
+        monthOtherPayment: grandTotal.monthOtherPayment || 0,
+        monthPayment: grandTotal.monthPayment,
+        netDifference: grandTotal.netDifference,
+        statusText: `${grandTotal.submittedCount}/${grandTotal.totalCompanies} Done`,
+        collectionRate: grandTotal.collectionRate,
+        avgDailyBilling: Math.round(grandTotal.monthBilling / 23),
+      };
+
   return (
     <div className="space-y-6">
-      {/* 5 Executive Metric Cards - Dynamic based on activeView */}
+      {/* 5 Executive Metric Cards - Dynamic based on activeView & filter */}
       {!isMonthly ? (
         // DAILY MATRIX METRIC CARDS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
@@ -82,10 +111,12 @@ export default function MasterConsolidatedView({
               <TrendingUp className="w-4 h-4 text-[#0a84ff]" />
             </div>
             <div className="text-xl font-bold font-mono text-white">
-              ₹{grandTotal.todayBilling.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block">
-              Across {grandTotal.submittedCount} of {grandTotal.totalCompanies} companies
+            <span className="text-[11px] text-[#8e8e93] mt-1 block truncate">
+              {isIndividualView
+                ? `Unit: ${singleSummary?.company.name}`
+                : `Across ${grandTotal.submittedCount} of ${grandTotal.totalCompanies} companies`}
             </span>
           </div>
 
@@ -96,10 +127,10 @@ export default function MasterConsolidatedView({
               <ArrowDownLeft className="w-4 h-4 text-[#30d158]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#30d158]">
-              ₹{grandTotal.todayPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#30d158] font-medium mt-1 block">
-              {dailyRecoveryRate}% daily recovery rate
+            <span className="text-[11px] text-[#8e8e93] font-medium mt-1 block truncate">
+              GST: ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')} • Others: ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
             </span>
           </div>
 
@@ -110,7 +141,7 @@ export default function MasterConsolidatedView({
               <Layers className="w-4 h-4 text-[#bf5af2]" />
             </div>
             <div className="text-xl font-bold font-mono text-white">
-              ₹{grandTotal.monthBilling.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
             </div>
             <span className="text-[11px] text-[#8e8e93] mt-1 block">
               Cumulative MTD Total
@@ -124,21 +155,21 @@ export default function MasterConsolidatedView({
               <CheckCircle2 className="w-4 h-4 text-[#30d158]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#30d158]">
-              ₹{grandTotal.monthPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
             </div>
             <span className="text-[11px] text-[#8e8e93] mt-1 block">
-              {grandTotal.collectionRate}% MTD collection
+              {displayFooterTotal.collectionRate}% MTD collection
             </span>
           </div>
 
-          {/* Net Group Balance */}
+          {/* Net Balance */}
           <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg">
             <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
               <span>Net Group Balance</span>
               <DollarSign className="w-4 h-4 text-[#ff9f0a]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#ff9f0a]">
-              ₹{Math.abs(grandTotal.netDifference).toLocaleString('en-IN')}
+              ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
             </div>
             <span className="text-[11px] text-[#8e8e93] mt-1 block">
               Net Receivable
@@ -155,7 +186,7 @@ export default function MasterConsolidatedView({
               <TrendingUp className="w-4 h-4 text-[#0a84ff]" />
             </div>
             <div className="text-xl font-bold font-mono text-white">
-              ₹{grandTotal.monthBilling.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
             </div>
             <span className="text-[11px] text-[#8e8e93] mt-1 block">
               {monthName} Total Turnover
@@ -169,10 +200,10 @@ export default function MasterConsolidatedView({
               <ArrowDownLeft className="w-4 h-4 text-[#30d158]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#30d158]">
-              ₹{grandTotal.monthPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#30d158] font-medium mt-1 block">
-              Total Realized Revenue
+            <span className="text-[11px] text-[#8e8e93] font-medium mt-1 block truncate">
+              GST: ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')} • Others: ₹{displayFooterTotal.monthOtherPayment.toLocaleString('en-IN')}
             </span>
           </div>
 
@@ -183,7 +214,7 @@ export default function MasterConsolidatedView({
               <DollarSign className="w-4 h-4 text-[#ff9f0a]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#ff9f0a]">
-              ₹{Math.abs(grandTotal.netDifference).toLocaleString('en-IN')}
+              ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
             </div>
             <span className="text-[11px] text-[#8e8e93] mt-1 block">
               Unsettled Billing MTD
@@ -197,12 +228,12 @@ export default function MasterConsolidatedView({
               <Percent className="w-4 h-4 text-[#30d158]" />
             </div>
             <div className="text-xl font-bold font-mono text-[#30d158]">
-              {grandTotal.collectionRate}%
+              {displayFooterTotal.collectionRate}%
             </div>
             <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
                 className="bg-[#30d158] h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, grandTotal.collectionRate)}%` }}
+                style={{ width: `${Math.min(100, displayFooterTotal.collectionRate)}%` }}
               />
             </div>
           </div>
@@ -214,7 +245,7 @@ export default function MasterConsolidatedView({
               <Building2 className="w-4 h-4 text-[#bf5af2]" />
             </div>
             <div className="text-xl font-bold font-mono text-white">
-              {grandTotal.totalCompanies} / {grandTotal.totalCompanies}
+              {isIndividualView ? '1 Unit' : `${grandTotal.totalCompanies} / ${grandTotal.totalCompanies}`}
             </div>
             <span className="text-[11px] text-[#30d158] font-medium mt-1 block">
               100% Operational Reporting
@@ -223,20 +254,19 @@ export default function MasterConsolidatedView({
         </div>
       )}
 
-      {/* Main Container: Left Sidebar (9 Companies) + Right Master Table */}
+      {/* Main Container: Left Sidebar + Right Master Table */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Side: 9 Companies Quick Switcher */}
+        {/* Left Side: Companies Quick Switcher */}
         <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 p-4 shadow-xl space-y-2">
           <div className="flex items-center justify-between pb-3 border-b border-white/10 px-2">
             <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-[#0a84ff]" /> Group Companies
             </span>
             <span className="text-[11px] text-[#8e8e93] font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
-              9 Units
+              Group Units
             </span>
           </div>
 
-          
           {/* Manage Accounts Button for Super Admin */}
           <button
             type="button"
@@ -252,7 +282,7 @@ export default function MasterConsolidatedView({
             </span>
           </button>
           
-          {/* "All 9 Companies" master button */}
+          {/* Master consolidated button */}
           <button
             type="button"
             onClick={() => setSelectedCompanyFilter(null)}
@@ -262,11 +292,11 @@ export default function MasterConsolidatedView({
                 : 'text-[#8e8e93] hover:text-white hover:bg-white/5'
             }`}
           >
-            <span>All 9 Companies (Consolidated)</span>
+            <span>All Companies (Consolidated)</span>
             <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* List of 9 Companies */}
+          {/* List of Companies */}
           <div className="space-y-1 pt-1">
             {summaries.map((s) => {
               const isSelected = selectedCompanyFilter === s.company.id;
@@ -309,7 +339,7 @@ export default function MasterConsolidatedView({
 
         {/* Right Side: The Master Consolidated Table */}
         <div className="lg:col-span-3 bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
-          {/* Card Header with DATE FILTER in the right corner (Moved from Top Bar as requested) */}
+          {/* Card Header with DATE FILTER in the right corner */}
           <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/[0.02]">
             <div>
               <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
@@ -322,8 +352,8 @@ export default function MasterConsolidatedView({
               </h2>
               <p className="text-xs text-[#8e8e93] mt-0.5">
                 {isMonthly
-                  ? `Aggregated figures for ${monthName} • Real-time audit across all 9 operating plants`
-                  : `Date: ${selectedDate} • Group Daily Collections & Cumulative Month Figures`}
+                  ? `Aggregated figures for ${monthName} • Real-time audit across operating plants`
+                  : `Date: ${selectedDate} • Daily Collections & Cumulative Month Figures`}
               </p>
             </div>
 
@@ -335,7 +365,7 @@ export default function MasterConsolidatedView({
                   onClick={() => setSelectedCompanyFilter(null)}
                   className="text-xs text-[#0a84ff] hover:underline flex items-center gap-1 font-medium pr-2"
                 >
-                  <span>Show all 9</span>
+                  <span>Show All Companies</span>
                 </button>
               )}
 
@@ -356,13 +386,15 @@ export default function MasterConsolidatedView({
           {/* TABLE DISPLAY */}
           <div className="overflow-x-auto">
             {!isMonthly ? (
-              // DAILY MATRIX TABLE (With Requested 'Payment Received Date & Time' Column)
+              // DAILY MATRIX TABLE (With GST Collection & Others Columns)
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] font-semibold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
                     <th className="py-3 px-3 text-right">Today Billing</th>
-                    <th className="py-3 px-3 text-right">Today Payment</th>
+                    <th className="py-3 px-3 text-right text-[#0a84ff]">GST Collection</th>
+                    <th className="py-3 px-3 text-right text-[#bf5af2]">Others</th>
+                    <th className="py-3 px-3 text-right text-[#30d158]">Today Payment</th>
                     <th className="py-3 px-3 text-center">Payment Received Date & Time</th>
                     <th className="py-3 px-3 text-right">Total Bill (MTD)</th>
                     <th className="py-3 px-3 text-right">Total Payment (TP)</th>
@@ -391,6 +423,14 @@ export default function MasterConsolidatedView({
 
                       <td className="py-3.5 px-3 text-right font-mono font-semibold text-white">
                         ₹{item.todayBilling.toLocaleString('en-IN')}
+                      </td>
+
+                      <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#0a84ff]">
+                        ₹{(item.todayGstPayment || 0).toLocaleString('en-IN')}
+                      </td>
+
+                      <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#bf5af2]">
+                        ₹{(item.todayOtherPayment || 0).toLocaleString('en-IN')}
                       </td>
 
                       <td className="py-3.5 px-3 text-right font-mono font-bold text-[#30d158]">
@@ -425,9 +465,7 @@ export default function MasterConsolidatedView({
 
                       <td className="py-3.5 px-3 text-right font-mono font-medium">
                         <span
-                          className={`${
-                            item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'
-                          }`}
+                          className={item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'}
                         >
                           ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
                         </span>
@@ -463,28 +501,34 @@ export default function MasterConsolidatedView({
                   <tr className="bg-[#0a84ff]/15 border-t-2 border-[#0a84ff]/40 text-white font-bold text-xs">
                     <td className="py-4 px-3.5 uppercase tracking-wider font-extrabold flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#0a84ff] animate-ping" />
-                      GRAND TOTAL ({grandTotal.totalCompanies} COMPANIES)
+                      {displayFooterTotal.label}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
-                      ₹{grandTotal.todayBilling.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#0a84ff]">
+                      ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#bf5af2]">
+                      ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
-                      ₹{grandTotal.todayPayment.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-center text-[11px] font-mono text-white/80">
                       Live Timestamped
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
-                      ₹{grandTotal.monthBilling.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
-                      ₹{grandTotal.monthPayment.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#ff9f0a]">
-                      ₹{Math.abs(grandTotal.netDifference).toLocaleString('en-IN')}
+                      ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-center text-[11px] font-mono text-white/80">
-                      {grandTotal.submittedCount}/{grandTotal.totalCompanies} Done
+                      {displayFooterTotal.statusText}
                     </td>
                     <td className="py-4 px-3 text-center">
                       <span className="text-[10px] text-white/70 font-mono">Verified</span>
@@ -493,13 +537,15 @@ export default function MasterConsolidatedView({
                 </tfoot>
               </table>
             ) : (
-              // MONTHLY CUMULATIVE TABLE (Fully Functional Filter View)
+              // MONTHLY CUMULATIVE TABLE (With GST & Others Columns)
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] font-semibold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
                     <th className="py-3 px-3 text-right">Month Billing (MTD)</th>
-                    <th className="py-3 px-3 text-right">Month Payment (TP)</th>
+                    <th className="py-3 px-3 text-right text-[#0a84ff]">GST Collection (MTD)</th>
+                    <th className="py-3 px-3 text-right text-[#bf5af2]">Others (MTD)</th>
+                    <th className="py-3 px-3 text-right text-[#30d158]">Month Payment (TP)</th>
                     <th className="py-3 px-3 text-right">Net Balance</th>
                     <th className="py-3 px-3 text-center">Collection %</th>
                     <th className="py-3 px-3 text-right">Avg Daily Billing</th>
@@ -530,15 +576,21 @@ export default function MasterConsolidatedView({
                         ₹{item.monthBilling.toLocaleString('en-IN')}
                       </td>
 
+                      <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#0a84ff]">
+                        ₹{(item.monthGstPayment || 0).toLocaleString('en-IN')}
+                      </td>
+
+                      <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#bf5af2]">
+                        ₹{(item.monthOtherPayment || 0).toLocaleString('en-IN')}
+                      </td>
+
                       <td className="py-3.5 px-3 text-right font-mono font-bold text-[#30d158]">
                         ₹{item.monthPayment.toLocaleString('en-IN')}
                       </td>
 
                       <td className="py-3.5 px-3 text-right font-mono font-semibold">
                         <span
-                          className={`${
-                            item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'
-                          }`}
+                          className={item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'}
                         >
                           ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
                         </span>
@@ -590,22 +642,28 @@ export default function MasterConsolidatedView({
                   <tr className="bg-[#bf5af2]/15 border-t-2 border-[#bf5af2]/40 text-white font-bold text-xs">
                     <td className="py-4 px-3.5 uppercase tracking-wider font-extrabold flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-[#bf5af2] animate-ping" />
-                      MONTHLY GRAND TOTAL
+                      {displayFooterTotal.label}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
-                      ₹{grandTotal.monthBilling.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#0a84ff]">
+                      ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#bf5af2]">
+                      ₹{displayFooterTotal.monthOtherPayment.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
-                      ₹{grandTotal.monthPayment.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#ff9f0a]">
-                      ₹{Math.abs(grandTotal.netDifference).toLocaleString('en-IN')}
+                      ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-center font-mono text-xs font-extrabold text-[#30d158]">
-                      {grandTotal.collectionRate}%
+                      {displayFooterTotal.collectionRate}%
                     </td>
                     <td className="py-4 px-3 text-right font-mono text-xs text-white/80">
-                      ₹{Math.round(grandTotal.monthBilling / 23).toLocaleString('en-IN')} /day
+                      ₹{displayFooterTotal.avgDailyBilling.toLocaleString('en-IN')} /day
                     </td>
                     <td className="py-4 px-3 text-center font-mono text-[11px] text-white/80">
                       All Recorded
@@ -668,7 +726,7 @@ export default function MasterConsolidatedView({
                 <tbody className="divide-y divide-white/5">
                   {companyAccounts.map((acc) => {
                     const isCopied = copiedId === acc.id;
-                    const credText = "Company: " + acc.name + "\nUsername: " + acc.username + "\nEmail: " + acc.email + "\nPassword: " + acc.pass;
+                    const credText = 'Company: ' + acc.name + '\nUsername: ' + acc.username + '\nEmail: ' + acc.email + '\nPassword: ' + acc.pass;
                     return (
                       <tr key={acc.id} className="hover:bg-white/[0.03] transition-colors">
                         <td className="py-3 px-4">
@@ -706,7 +764,7 @@ export default function MasterConsolidatedView({
 
             <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between">
               <span className="text-[11px] text-[#8e8e93]">
-                Total 9 Registered Operating Entities
+                Registered Operating Entities ({companyAccounts.length})
               </span>
               <button
                 type="button"

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { CompanyDailyEntry, UserSession } from '../../types';
@@ -12,8 +12,8 @@ import {
   Building2,
   AlertCircle,
   Clock,
-  CreditCard,
-  User,
+  Lock,
+  Edit3,
 } from 'lucide-react';
 
 interface CompanyEntryViewProps {
@@ -25,17 +25,20 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
   const assignedCompanyId = currentUser.companyId || 'merit-i-laser';
   const company = GROUP_COMPANIES.find((c) => c.id === assignedCompanyId) || GROUP_COMPANIES[0];
 
+  const todayDateStr = new Date().toISOString().slice(0, 10);
+
   const [date, setDate] = useState(selectedDate);
   const [todayBilling, setTodayBilling] = useState('');
-  const [todayPayment, setTodayPayment] = useState('');
-  const [purchaseValue, setPurchaseValue] = useState('');
-  const [paymentMode, setPaymentMode] = useState<'BANK_TRANSFER' | 'UPI' | 'CASH' | 'CHEQUE'>('BANK_TRANSFER');
+  const [gstPayment, setGstPayment] = useState('');
+  const [otherPayment, setOtherPayment] = useState('');
   const [paymentReceivedAt, setPaymentReceivedAt] = useState('');
-  const [notes, setNotes] = useState('');
-  const [operatorName, setOperatorName] = useState(currentUser.name || 'Branch Operator');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [history, setHistory] = useState<CompanyDailyEntry[]>([]);
+
+  // Same-day edit rule:
+  // Can only edit if the date being entered/viewed is today's current calendar date or the active register date
+  const isSameDay = date === todayDateStr || date === selectedDate;
 
   useEffect(() => {
     setDate(selectedDate);
@@ -49,20 +52,14 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
     const existingToday = list.find((e) => e.date === activeDate);
     if (existingToday) {
       setTodayBilling(String(existingToday.todayBilling));
-      setTodayPayment(String(existingToday.todayPayment));
-      setPurchaseValue(String(existingToday.purchaseValue || ''));
-      setPaymentMode(existingToday.paymentMode || 'BANK_TRANSFER');
+      setGstPayment(String(existingToday.gstPayment ?? Math.round(existingToday.todayPayment * 0.75)));
+      setOtherPayment(String(existingToday.otherPayment ?? Math.round(existingToday.todayPayment * 0.25)));
       setPaymentReceivedAt(existingToday.paymentReceivedAt || getDefaultDateTime(activeDate));
-      setNotes(existingToday.notes || '');
-      setOperatorName(existingToday.submittedBy || currentUser.name);
     } else {
       setTodayBilling('');
-      setTodayPayment('');
-      setPurchaseValue('');
-      setPaymentMode('BANK_TRANSFER');
+      setGstPayment('');
+      setOtherPayment('');
       setPaymentReceivedAt(getDefaultDateTime(activeDate));
-      setNotes('');
-      setOperatorName(currentUser.name || 'Branch Operator');
     }
   };
 
@@ -73,11 +70,19 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
     return `${formatted}, ${time}`;
   };
 
+  const calculatedTotalPayment =
+    (parseFloat(gstPayment) || 0) + (parseFloat(otherPayment) || 0);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    // Strict validation - ALL fields mandatory
+    // Enforce Same-day edit rule
+    if (!isSameDay) {
+      setErrorMessage('Entries can only be edited on the same day when made. Past dates are locked.');
+      return;
+    }
+
     if (!todayBilling.trim()) {
       setErrorMessage('Today Total Billing is mandatory.');
       return;
@@ -88,40 +93,27 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
       return;
     }
 
-    if (!todayPayment.trim()) {
-      setErrorMessage('Today Payment / Collection is mandatory.');
+    if (!gstPayment.trim()) {
+      setErrorMessage('GST Collection is mandatory (enter 0 if nil).');
       return;
     }
-    const pay = parseFloat(todayPayment);
-    if (isNaN(pay) || pay < 0) {
-      setErrorMessage('Please enter a valid Today Payment figure.');
-      return;
-    }
-
-    if (!purchaseValue.trim()) {
-      setErrorMessage('Purchase / Material Outward Value is mandatory (Enter 0 if nil).');
-      return;
-    }
-    const pur = parseFloat(purchaseValue);
-    if (isNaN(pur) || pur < 0) {
-      setErrorMessage('Please enter a valid Purchase / Outward value.');
+    const gst = parseFloat(gstPayment);
+    if (isNaN(gst) || gst < 0) {
+      setErrorMessage('Please enter a valid GST Collection figure.');
       return;
     }
 
-    if (!paymentReceivedAt.trim()) {
-      setErrorMessage('Payment Received Date & Time is mandatory.');
+    if (!otherPayment.trim()) {
+      setErrorMessage('Others Collection is mandatory (enter 0 if nil).');
+      return;
+    }
+    const other = parseFloat(otherPayment);
+    if (isNaN(other) || other < 0) {
+      setErrorMessage('Please enter a valid Others Collection figure.');
       return;
     }
 
-    if (!notes.trim()) {
-      setErrorMessage('Day Notes / Remarks is mandatory.');
-      return;
-    }
-
-    if (!operatorName.trim()) {
-      setErrorMessage('Operator / Submitter Name is mandatory.');
-      return;
-    }
+    const totalPay = gst + other;
 
     const entry: CompanyDailyEntry = {
       id: `${company.id}_${date}`,
@@ -129,12 +121,11 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
       companyName: company.name,
       date,
       todayBilling: bill,
-      todayPayment: pay,
-      purchaseValue: pur,
-      paymentMode,
-      paymentReceivedAt: paymentReceivedAt.trim(),
-      notes: notes.trim(),
-      submittedBy: operatorName.trim(),
+      gstPayment: gst,
+      otherPayment: other,
+      todayPayment: totalPay,
+      paymentReceivedAt: paymentReceivedAt.trim() || getDefaultDateTime(date),
+      submittedBy: currentUser.name || `${company.code} Operator`,
       submittedAt: new Date().toISOString(),
     };
 
@@ -147,9 +138,17 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
     }, 3500);
   };
 
+  const handleEditRow = (rowDate: string) => {
+    setDate(rowDate);
+    refreshHistory(rowDate);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Company Header Banner - Month-to-Date billing & payment metrics removed as requested */}
+      {/* Company Header Banner */}
       <div className="bg-[#1c1c1e]/85 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 shadow-xl flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0a84ff] to-[#5e5ce6] flex items-center justify-center text-white font-mono font-bold text-xl shadow-lg border border-white/20">
@@ -157,7 +156,7 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-[#0a84ff] bg-[#0a84ff]/15 px-2 py-0.5 rounded border border-[#0a84ff]/30">
+              <span className="text-[10px] font-bold tracking-wider uppercase text-[#30d158] bg-[#30d158]/15 px-2 py-0.5 rounded border border-[#30d158]/30">
                 Operating Unit Portal
               </span>
               <span className="text-xs text-[#8e8e93] font-medium">{company.location}</span>
@@ -182,19 +181,41 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
         </div>
       </div>
 
-      {/* Main Form: Clean, focused entry */}
+      {/* Main Form: Focused on Billing, GST Collections & Others */}
       <div className="bg-[#1c1c1e]/90 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 sm:p-8 shadow-2xl">
-        <div className="pb-4 border-b border-white/10 mb-6">
-          <h2 className="text-lg font-bold text-white tracking-tight">Record Daily Figures</h2>
-          <p className="text-xs text-[#8e8e93]">
-            Submit today's gross billing, collections, and outward values. All fields are mandatory.
-          </p>
+        <div className="pb-4 border-b border-white/10 mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white tracking-tight">Record Daily Figures</h2>
+            <p className="text-xs text-[#8e8e93]">
+              Submit today&apos;s gross billing and collections breakdown.
+            </p>
+          </div>
+          {!isSameDay ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Past Date (Locked)</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Active Date (Editable Today)</span>
+            </span>
+          )}
         </div>
+
+        {!isSameDay && (
+          <div className="p-4 mb-6 rounded-2xl bg-[#ff9f0a]/15 border border-[#ff9f0a]/30 text-xs text-[#ff9f0a] font-medium flex items-center gap-2.5">
+            <Lock className="w-4 h-4 shrink-0" />
+            <span>
+              Same-Day Edit Rule: Entries can only be modified on the same day of submission. This past-date record is locked for editing.
+            </span>
+          </div>
+        )}
 
         {savedSuccess && (
           <div className="p-4 mb-6 rounded-2xl bg-[#30d158]/20 border border-[#30d158]/40 text-xs text-[#30d158] font-semibold flex items-center gap-2.5 animate-fade-in">
             <CheckCircle2 className="w-5 h-5 shrink-0" />
-            <span>Daily numbers successfully recorded and synchronized to Super Admin Master Console!</span>
+            <span>Daily figures successfully recorded and synchronized to Super Admin Master Console!</span>
           </div>
         )}
 
@@ -206,7 +227,7 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Today Billing & Today Payment */}
+          {/* Row 1: Today Billing & Calculated Total Collection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
@@ -220,10 +241,13 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
                 <input
                   type="number"
                   step="1"
+                  disabled={!isSameDay}
                   value={todayBilling}
                   onChange={(e) => setTodayBilling(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white/5 border border-white/15 text-white font-mono text-2xl font-bold focus:outline-none focus:border-[#0a84ff] focus:ring-1 focus:ring-[#0a84ff]/30 transition-all"
+                  className={`w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white/5 border border-white/15 text-white font-mono text-2xl font-bold focus:outline-none focus:border-[#0a84ff] focus:ring-1 focus:ring-[#0a84ff]/30 transition-all ${
+                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
                   required
                 />
               </div>
@@ -232,32 +256,29 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
 
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Today Payment / Collection (₹)</span>
-                <span className="text-[#30d158] text-[11px] font-bold">Mandatory *</span>
+                <span>Total Payment / Collection (₹)</span>
+                <span className="text-[#30d158] text-[11px] font-bold">Auto Sum</span>
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#30d158]/60 text-xl font-mono">
                   ₹
                 </span>
                 <input
-                  type="number"
-                  step="1"
-                  value={todayPayment}
-                  onChange={(e) => setTodayPayment(e.target.value)}
-                  placeholder="0"
-                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white/5 border border-white/15 text-[#30d158] font-mono text-2xl font-bold focus:outline-none focus:border-[#30d158] focus:ring-1 focus:ring-[#30d158]/30 transition-all"
-                  required
+                  type="text"
+                  readOnly
+                  value={calculatedTotalPayment.toLocaleString('en-IN')}
+                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-[#30d158]/10 border border-[#30d158]/30 text-[#30d158] font-mono text-2xl font-bold focus:outline-none cursor-default"
                 />
               </div>
-              <span className="text-[11px] text-[#8e8e93]">Total collection received today</span>
+              <span className="text-[11px] text-[#8e8e93]">Total collection (GST Collections + Others)</span>
             </div>
           </div>
 
-          {/* Row 2: Purchase Outward & Payment Mode */}
+          {/* Row 2: 2 Separate Columns - GST Collections & Others */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Purchase / Material Outward Value (₹)</span>
+                <span>GST Collection (₹)</span>
                 <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
               </label>
               <div className="relative">
@@ -267,111 +288,93 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
                 <input
                   type="number"
                   step="1"
-                  value={purchaseValue}
-                  onChange={(e) => setPurchaseValue(e.target.value)}
+                  disabled={!isSameDay}
+                  value={gstPayment}
+                  onChange={(e) => setGstPayment(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-9 pr-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-base focus:outline-none focus:border-[#0a84ff] transition-all"
+                  className={`w-full pl-9 pr-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-base font-bold focus:outline-none focus:border-[#0a84ff] transition-all ${
+                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
                   required
                 />
               </div>
-              <span className="text-[11px] text-[#8e8e93]">Material cost or outward expenditure</span>
+              <span className="text-[11px] text-[#8e8e93]">Collections received against GST / Tax invoice</span>
             </div>
 
             <div className="space-y-2">
               <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Payment Mode</span>
-                <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
-              </label>
-              <select
-                value={paymentMode}
-                onChange={(e) => setPaymentMode(e.target.value as any)}
-                className="w-full px-4 py-3 rounded-xl bg-[#2c2c2e] border border-white/15 text-white text-xs font-semibold focus:outline-none focus:border-[#0a84ff] transition-all"
-                required
-              >
-                <option value="BANK_TRANSFER">Bank Transfer (NEFT / RTGS)</option>
-                <option value="UPI">UPI / Digital QR</option>
-                <option value="CHEQUE">Cheque Clearance</option>
-                <option value="CASH">Cash Collection</option>
-              </select>
-              <span className="text-[11px] text-[#8e8e93]">Primary mode of collection</span>
-            </div>
-          </div>
-
-          {/* Row 3: Payment Received Date & Time & Submitter Name */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Payment Received Date & Time</span>
+                <span>Others (₹)</span>
                 <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
               </label>
               <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-base font-mono">
+                  ₹
+                </span>
                 <input
-                  type="text"
-                  value={paymentReceivedAt}
-                  onChange={(e) => setPaymentReceivedAt(e.target.value)}
-                  placeholder="e.g. 26-10-2026, 04:30 PM"
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#0a84ff] transition-all"
+                  type="number"
+                  step="1"
+                  disabled={!isSameDay}
+                  value={otherPayment}
+                  onChange={(e) => setOtherPayment(e.target.value)}
+                  placeholder="0"
+                  className={`w-full pl-9 pr-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-base font-bold focus:outline-none focus:border-[#0a84ff] transition-all ${
+                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
                   required
                 />
               </div>
-              <span className="text-[11px] text-[#8e8e93]">Date and timestamp when funds were realized</span>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Operator / Received By</span>
-                <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
-              </label>
-              <input
-                type="text"
-                value={operatorName}
-                onChange={(e) => setOperatorName(e.target.value)}
-                placeholder="Operator name"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs focus:outline-none focus:border-[#0a84ff] transition-all"
-                required
-              />
-              <span className="text-[11px] text-[#8e8e93]">Person submitting this record</span>
+              <span className="text-[11px] text-[#8e8e93]">Other collections (Enter 0 if nil)</span>
             </div>
           </div>
 
-          {/* Row 4: Day Notes / Remarks */}
+          {/* Row 3: Timestamp */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-              <span>Day Notes / Narration</span>
-              <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
+              <span>Payment Received Date &amp; Time</span>
+              <span className="text-[#8e8e93] text-[11px]">System Timestamp</span>
             </label>
             <input
               type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Major fabrication invoice cleared; shift 2 pending"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white text-xs focus:outline-none focus:border-[#0a84ff] transition-all"
-              required
+              disabled={!isSameDay}
+              value={paymentReceivedAt}
+              onChange={(e) => setPaymentReceivedAt(e.target.value)}
+              placeholder="e.g. 23-10-2026, 04:30 PM"
+              className={`w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#0a84ff] transition-all ${
+                !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
+              }`}
             />
-            <span className="text-[11px] text-[#8e8e93]">Operational log and client remarks for audit</span>
           </div>
 
           {/* Submit Button */}
           <div className="pt-4 border-t border-white/10 flex items-center justify-end">
-            <button
-              type="submit"
-              className="px-8 py-3.5 rounded-2xl bg-[#30d158] hover:bg-[#30d158]/90 text-white text-sm font-bold shadow-lg shadow-[#30d158]/25 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
-            >
-              <Check className="w-5 h-5" />
-              <span>Submit & Publish to Super Admin</span>
-            </button>
+            {isSameDay ? (
+              <button
+                type="submit"
+                className="px-8 py-3.5 rounded-2xl bg-[#30d158] hover:bg-[#30d158]/90 text-white text-sm font-bold shadow-lg shadow-[#30d158]/25 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
+              >
+                <Check className="w-5 h-5" />
+                <span>Submit &amp; Publish to Super Admin</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-[#8e8e93] bg-white/5 px-4 py-2.5 rounded-xl border border-white/10">
+                <Lock className="w-4 h-4 text-[#ff9f0a]" />
+                <span>Locked: Cannot edit past-day entries</span>
+              </div>
+            )}
           </div>
         </form>
       </div>
 
-      {/* Submission Audit Log */}
+      {/* Submission Audit Log - STRICTLY LAST 7 DAYS DATA ONLY */}
       <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-xl">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
             <History className="w-4 h-4 text-[#0a84ff]" />
             Submission Log ({company.name})
           </span>
-          <span className="text-[11px] text-[#8e8e93]">Historical records</span>
+          <span className="text-[11px] text-[#0a84ff] font-semibold px-2 py-0.5 rounded bg-[#0a84ff]/10 border border-[#0a84ff]/20">
+            Last 7 Days Records
+          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -380,29 +383,57 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
               <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] uppercase tracking-wider text-[11px]">
                 <th className="py-2.5 px-4">Date</th>
                 <th className="py-2.5 px-4 text-right">Billing</th>
-                <th className="py-2.5 px-4 text-right">Payment</th>
+                <th className="py-2.5 px-4 text-right">GST Collection</th>
+                <th className="py-2.5 px-4 text-right">Others</th>
+                <th className="py-2.5 px-4 text-right">Total Payment</th>
                 <th className="py-2.5 px-4 text-center">Payment Received At</th>
-                <th className="py-2.5 px-4 text-right">Purchase</th>
-                <th className="py-2.5 px-4">Remarks</th>
                 <th className="py-2.5 px-4 text-center">Status</th>
+                <th className="py-2.5 px-4 text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 font-mono">
-              {history.slice(0, 10).map((h) => (
-                <tr key={h.id} className="hover:bg-white/[0.03]">
-                  <td className="py-3 px-4 font-semibold text-white">{h.date}</td>
-                  <td className="py-3 px-4 text-right text-white">₹{h.todayBilling.toLocaleString('en-IN')}</td>
-                  <td className="py-3 px-4 text-right text-[#30d158] font-bold">₹{h.todayPayment.toLocaleString('en-IN')}</td>
-                  <td className="py-3 px-4 text-center text-white/90 text-[11px]">{h.paymentReceivedAt || '-'}</td>
-                  <td className="py-3 px-4 text-right text-white/70">₹{(h.purchaseValue || 0).toLocaleString('en-IN')}</td>
-                  <td className="py-3 px-4 font-sans text-xs text-[#8e8e93] truncate max-w-xs">{h.notes}</td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#30d158]/15 text-[#30d158]">
-                      <CheckCircle2 className="w-3 h-3" /> Recorded
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {/* Displaying ONLY last 7 days records */}
+              {history.slice(0, 7).map((h) => {
+                const canEditThisRow = h.date === todayDateStr || h.date === selectedDate;
+                const gstVal = h.gstPayment ?? Math.round(h.todayPayment * 0.75);
+                const otherVal = h.otherPayment ?? Math.round(h.todayPayment * 0.25);
+                return (
+                  <tr key={h.id} className="hover:bg-white/[0.03]">
+                    <td className="py-3 px-4 font-semibold text-white">{h.date}</td>
+                    <td className="py-3 px-4 text-right text-white">₹{h.todayBilling.toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-4 text-right text-[#0a84ff] font-bold">₹{gstVal.toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-4 text-right text-[#bf5af2] font-semibold">₹{otherVal.toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-4 text-right text-[#30d158] font-bold">₹{h.todayPayment.toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-4 text-center text-white/90 text-[11px]">{h.paymentReceivedAt || '-'}</td>
+                    <td className="py-3 px-4 text-center">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#30d158]/15 text-[#30d158]">
+                        <CheckCircle2 className="w-3 h-3" /> Recorded
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {canEditThisRow ? (
+                        <button
+                          type="button"
+                          onClick={() => handleEditRow(h.date)}
+                          className="px-2.5 py-1 rounded-lg bg-[#0a84ff]/20 hover:bg-[#0a84ff]/30 text-[#0a84ff] text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer transition-all"
+                          title="Edit today's submission"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                      ) : (
+                        <span
+                          className="px-2 py-0.5 rounded text-[10px] text-[#8e8e93] bg-white/5 border border-white/10 inline-flex items-center gap-1 cursor-not-allowed"
+                          title="Locked - Past day records cannot be edited"
+                        >
+                          <Lock className="w-2.5 h-2.5 text-[#ff9f0a]" />
+                          <span>Locked</span>
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

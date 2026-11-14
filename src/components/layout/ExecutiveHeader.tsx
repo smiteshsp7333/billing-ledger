@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { UserSession } from '../../types';
@@ -106,9 +106,15 @@ export default function ExecutiveHeader({
           <div>
             <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
               Billing Ledger
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30">
-                9 Group Companies
-              </span>
+              {isSuperAdmin ? (
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#0a84ff]/20 text-[#0a84ff] border border-[#0a84ff]/30">
+                  Group Companies
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#30d158]/20 text-[#30d158] border border-[#30d158]/30">
+                  {currentUser?.companyName || 'Operating Unit'}
+                </span>
+              )}
             </h1>
             <p className="text-xs text-[#8e8e93]">Daily Operational Collection & Consolidated Billing Matrix</p>
           </div>

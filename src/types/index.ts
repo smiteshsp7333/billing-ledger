@@ -1,4 +1,4 @@
-﻿export type CompanyCategory = 'LASER' | 'PVD' | 'WORKS';
+export type CompanyCategory = 'LASER' | 'PVD' | 'WORKS';
 
 export interface GroupCompany {
   id: string;
@@ -16,20 +16,26 @@ export interface CompanyDailyEntry {
   companyName: string;
   date: string; // YYYY-MM-DD
   todayBilling: number; // Today Billing value (INR)
-  todayPayment: number; // Today Payment / Collection (INR)
-  purchaseValue: number; // Purchase / Outward value (INR)
-  notes: string; // Mandatory remarks / narration
-  paymentMode: 'CASH' | 'BANK_TRANSFER' | 'UPI' | 'CHEQUE';
-  paymentReceivedAt: string; // e.g. "23-10-2026, 04:15 PM"
-  submittedBy: string;
+  gstPayment: number; // GST Collection (INR)
+  otherPayment: number; // Others / Other Collection (INR)
+  todayPayment: number; // Total Collection = gstPayment + otherPayment (INR)
+  purchaseValue?: number; // Optional
+  notes?: string; // Optional remarks / narration
+  paymentMode?: 'CASH' | 'BANK_TRANSFER' | 'UPI' | 'CHEQUE';
+  paymentReceivedAt?: string; // e.g. "23-10-2026, 04:15 PM"
+  submittedBy?: string;
   submittedAt: string;
 }
 
 export interface CompanySummary {
   company: GroupCompany;
   todayBilling: number;
+  todayGstPayment: number;
+  todayOtherPayment: number;
   todayPayment: number;
   monthBilling: number;
+  monthGstPayment: number;
+  monthOtherPayment: number;
   monthPayment: number;
   netDifference: number; // Total Bill - Total Payment
   hasEntryToday: boolean;
@@ -43,8 +49,12 @@ export interface CompanySummary {
 
 export interface GroupGrandTotal {
   todayBilling: number;
+  todayGstPayment: number;
+  todayOtherPayment: number;
   todayPayment: number;
   monthBilling: number;
+  monthGstPayment: number;
+  monthOtherPayment: number;
   monthPayment: number;
   netDifference: number;
   submittedCount: number;
