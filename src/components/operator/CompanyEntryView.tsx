@@ -28,8 +28,9 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
   const todayDateStr = new Date().toISOString().slice(0, 10);
 
   const [date, setDate] = useState(selectedDate);
-  const [todayBilling, setTodayBilling] = useState('');
-  const [gstPayment, setGstPayment] = useState('');
+  const [billingWithGst, setBillingWithGst] = useState('');
+  const [otherBilling, setOtherBilling] = useState('');
+  const [paymentCollection, setPaymentCollection] = useState('');
   const [otherPayment, setOtherPayment] = useState('');
   const [paymentReceivedAt, setPaymentReceivedAt] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -51,14 +52,25 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
 
     const existingToday = list.find((e) => e.date === activeDate);
     if (existingToday) {
-      setTodayBilling(String(existingToday.todayBilling));
-      setGstPayment(String(existingToday.gstPayment ?? Math.round(existingToday.todayPayment * 0.75)));
-      setOtherPayment(String(existingToday.otherPayment ?? Math.round(existingToday.todayPayment * 0.25)));
+      setBillingWithGst(
+        String(
+          existingToday.billingWithGst ||
+            (existingToday.billing ? Math.round(existingToday.billing * 1.18) : existingToday.todayBilling)
+        )
+      );
+      setOtherBilling(String(existingToday.otherBilling || '0'));
+      setPaymentCollection(
+        String(existingToday.paymentCollection || Math.round(existingToday.todayPayment * 0.95))
+      );
+      setOtherPayment(
+        String(existingToday.otherPayment || Math.round(existingToday.todayPayment * 0.05))
+      );
       setPaymentReceivedAt(existingToday.paymentReceivedAt || getDefaultDateTime(activeDate));
     } else {
-      setTodayBilling('');
-      setGstPayment('');
-      setOtherPayment('');
+      setBillingWithGst('');
+      setOtherBilling('0');
+      setPaymentCollection('');
+      setOtherPayment('0');
       setPaymentReceivedAt(getDefaultDateTime(activeDate));
     }
   };
@@ -70,8 +82,14 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
     return `${formatted}, ${time}`;
   };
 
-  const calculatedTotalPayment =
-    (parseFloat(gstPayment) || 0) + (parseFloat(otherPayment) || 0);
+  const bWithGstNum = parseFloat(billingWithGst) || 0;
+  const oBillNum = parseFloat(otherBilling) || 0;
+  const pColNum = parseFloat(paymentCollection) || 0;
+  const oPayNum = parseFloat(otherPayment) || 0;
+
+  const calculatedBaseBilling = bWithGstNum > 0 ? Math.round(bWithGstNum / 1.18) : 0;
+  const calculatedTotalPayment = pColNum + oPayNum;
+  const calculatedTotalBilling = bWithGstNum + oBillNum;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,53 +101,42 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
       return;
     }
 
-    if (!todayBilling.trim()) {
-      setErrorMessage('Today Total Billing is mandatory.');
+    if (!billingWithGst.trim()) {
+      setErrorMessage('Billing with GST is mandatory.');
       return;
     }
-    const bill = parseFloat(todayBilling);
-    if (isNaN(bill) || bill < 0) {
-      setErrorMessage('Please enter a valid Today Total Billing figure.');
-      return;
-    }
-
-    if (!gstPayment.trim()) {
-      setErrorMessage('GST Collection is mandatory (enter 0 if nil).');
-      return;
-    }
-    const gst = parseFloat(gstPayment);
-    if (isNaN(gst) || gst < 0) {
-      setErrorMessage('Please enter a valid GST Collection figure.');
+    if (isNaN(bWithGstNum) || bWithGstNum < 0) {
+      setErrorMessage('Please enter a valid Billing with GST figure.');
       return;
     }
 
-    if (!otherPayment.trim()) {
-      setErrorMessage('Others Collection is mandatory (enter 0 if nil).');
+    if (!paymentCollection.trim()) {
+      setErrorMessage('Payment Collection is mandatory (enter 0 if nil).');
       return;
     }
-    const other = parseFloat(otherPayment);
-    if (isNaN(other) || other < 0) {
-      setErrorMessage('Please enter a valid Others Collection figure.');
+    if (isNaN(pColNum) || pColNum < 0) {
+      setErrorMessage('Please enter a valid Payment Collection figure.');
       return;
     }
 
-    const totalPay = gst + other;
-
-    const entry: CompanyDailyEntry = {
+    const entryToSave: CompanyDailyEntry = {
       id: `${company.id}_${date}`,
       companyId: company.id,
       companyName: company.name,
       date,
-      todayBilling: bill,
-      gstPayment: gst,
-      otherPayment: other,
-      todayPayment: totalPay,
-      paymentReceivedAt: paymentReceivedAt.trim() || getDefaultDateTime(date),
-      submittedBy: currentUser.name || `${company.code} Operator`,
+      billing: calculatedBaseBilling,
+      otherBilling: oBillNum,
+      billingWithGst: bWithGstNum,
+      paymentCollection: pColNum,
+      otherPayment: oPayNum,
+      todayBilling: calculatedTotalBilling,
+      todayPayment: calculatedTotalPayment,
+      paymentReceivedAt: paymentReceivedAt || getDefaultDateTime(date),
+      submittedBy: `${company.code} Operator`,
       submittedAt: new Date().toISOString(),
     };
 
-    saveCompanyDailyEntry(entry);
+    saveCompanyDailyEntry(entryToSave);
     setSavedSuccess(true);
     refreshHistory(date);
 
@@ -138,37 +145,38 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
     }, 3500);
   };
 
-  const handleEditRow = (rowDate: string) => {
-    setDate(rowDate);
-    refreshHistory(rowDate);
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  const handleSelectDateToEdit = (selectedHistoryDate: string) => {
+    setDate(selectedHistoryDate);
+    refreshHistory(selectedHistoryDate);
   };
+
+  // Restrict submission log to last 7 days only
+  const last7DaysHistory = history.slice(0, 7);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Company Header Banner */}
-      <div className="bg-[#1c1c1e]/85 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 shadow-xl flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0a84ff] to-[#5e5ce6] flex items-center justify-center text-white font-mono font-bold text-xl shadow-lg border border-white/20">
+      {/* Unit Identity Header */}
+      <div className="bg-[#111c38] p-5 sm:p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-sans font-black text-sm">
             {company.code}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-[#30d158] bg-[#30d158]/15 px-2 py-0.5 rounded border border-[#30d158]/30">
-                Operating Unit Portal
+              <h2 className="text-lg font-black text-white tracking-tight">{company.name}</h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                Operating Portal
               </span>
-              <span className="text-xs text-[#8e8e93] font-medium">{company.location}</span>
             </div>
-            <h1 className="text-xl font-bold text-white mt-1">{company.name}</h1>
-            <p className="text-xs text-[#8e8e93]">Daily Collection & Operational Billing Desk</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Unit Location: {company.location} • Authorized Daily Financial Submission
+            </p>
           </div>
         </div>
 
-        {/* Date Filter for Operator */}
-        <div className="flex items-center gap-2 bg-white/5 px-3.5 py-2 rounded-2xl border border-white/10 text-xs">
-          <Calendar className="w-4 h-4 text-[#0a84ff]" />
+        {/* Date Selector */}
+        <div className="flex items-center gap-2 bg-[#0b1329] px-3.5 py-2 rounded-xl border border-slate-800 self-start sm:self-auto">
+          <Calendar className="w-4 h-4 text-blue-400 shrink-0" />
           <input
             type="date"
             value={date}
@@ -176,257 +184,286 @@ export default function CompanyEntryView({ currentUser, selectedDate }: CompanyE
               setDate(e.target.value);
               refreshHistory(e.target.value);
             }}
-            className="bg-transparent text-white font-mono focus:outline-none cursor-pointer text-xs"
+            className="bg-transparent border-none text-white text-xs font-sans font-bold focus:outline-none cursor-pointer"
+            title="Select date for entry"
           />
         </div>
       </div>
 
-      {/* Main Form: Focused on Billing, GST Collections & Others */}
-      <div className="bg-[#1c1c1e]/90 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 sm:p-8 shadow-2xl">
-        <div className="pb-4 border-b border-white/10 mb-6 flex items-center justify-between">
+      {/* Same-Day Edit Security Notice */}
+      {!isSameDay ? (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3 text-amber-300 text-xs">
+          <Lock className="w-4 h-4 shrink-0 text-amber-400" />
+          <span>
+            <strong>Entry Locked (Past Date):</strong> Daily entries can only be edited on the same calendar day when made. This past record ({date}) is read-only.
+          </span>
+        </div>
+      ) : (
+        <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center gap-2.5 text-blue-300 text-xs">
+          <Edit3 className="w-4 h-4 shrink-0 text-blue-400" />
+          <span>
+            <strong>Same-Day Entry Active:</strong> You can submit and revise today&apos;s figures for {date}.
+          </span>
+        </div>
+      )}
+
+      {/* Main Submission Form (Strictly 4 Fields Matching Screenshot 2) */}
+      <form onSubmit={handleSubmit} className="bg-[#111c38] p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Record Daily Figures</h2>
-            <p className="text-xs text-[#8e8e93]">
-              Submit today&apos;s gross billing and collections breakdown.
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+              Daily Operational Billing & Payment Entry
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Enter today&apos;s gross billing with GST, other billing, and collections.
             </p>
           </div>
-          {!isSameDay ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Past Date (Locked)</span>
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Active Date (Editable Today)</span>
-            </span>
-          )}
+          <span className="text-[11px] font-bold text-slate-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+            Date: {date}
+          </span>
         </div>
 
-        {!isSameDay && (
-          <div className="p-4 mb-6 rounded-2xl bg-[#ff9f0a]/15 border border-[#ff9f0a]/30 text-xs text-[#ff9f0a] font-medium flex items-center gap-2.5">
-            <Lock className="w-4 h-4 shrink-0" />
-            <span>
-              Same-Day Edit Rule: Entries can only be modified on the same day of submission. This past-date record is locked for editing.
-            </span>
-          </div>
-        )}
-
-        {savedSuccess && (
-          <div className="p-4 mb-6 rounded-2xl bg-[#30d158]/20 border border-[#30d158]/40 text-xs text-[#30d158] font-semibold flex items-center gap-2.5 animate-fade-in">
-            <CheckCircle2 className="w-5 h-5 shrink-0" />
-            <span>Daily figures successfully recorded and synchronized to Super Admin Master Console!</span>
-          </div>
-        )}
-
         {errorMessage && (
-          <div className="p-4 mb-6 rounded-2xl bg-[#ff453a]/20 border border-[#ff453a]/40 text-xs text-[#ff453a] font-semibold flex items-center gap-2.5">
-            <AlertCircle className="w-5 h-5 shrink-0" />
+          <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Today Billing & Calculated Total Collection */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Today Total Billing (₹)</span>
-                <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-xl font-mono">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  step="1"
-                  disabled={!isSameDay}
-                  value={todayBilling}
-                  onChange={(e) => setTodayBilling(e.target.value)}
-                  placeholder="0"
-                  className={`w-full pl-10 pr-4 py-3.5 rounded-2xl bg-white/5 border border-white/15 text-white font-mono text-2xl font-bold focus:outline-none focus:border-[#0a84ff] focus:ring-1 focus:ring-[#0a84ff]/30 transition-all ${
-                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
-                  }`}
-                  required
-                />
-              </div>
-              <span className="text-[11px] text-[#8e8e93]">Gross bill value produced today</span>
-            </div>
+        {savedSuccess && (
+          <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>Record published successfully to Super Admin consolidated matrix.</span>
+          </div>
+        )}
 
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Total Payment / Collection (₹)</span>
-                <span className="text-[#30d158] text-[11px] font-bold">Auto Sum</span>
+        {/* 4 Fields Matching Screenshot 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Field 1: Billing with GST */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-300">
+                Billing with GST (₹) <span className="text-rose-400">*</span>
               </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#30d158]/60 text-xl font-mono">
-                  ₹
+              {bWithGstNum > 0 && (
+                <span className="text-[10px] text-slate-400 font-sans">
+                  Base: ₹{calculatedBaseBilling.toLocaleString('en-IN')} + 18% GST
                 </span>
-                <input
-                  type="text"
-                  readOnly
-                  value={calculatedTotalPayment.toLocaleString('en-IN')}
-                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-[#30d158]/10 border border-[#30d158]/30 text-[#30d158] font-mono text-2xl font-bold focus:outline-none cursor-default"
-                />
-              </div>
-              <span className="text-[11px] text-[#8e8e93]">Total collection (GST Collections + Others)</span>
+              )}
             </div>
+            <div className="relative">
+              <input
+                type="number"
+                disabled={!isSameDay}
+                value={billingWithGst}
+                onChange={(e) => setBillingWithGst(e.target.value)}
+                placeholder="e.g. 118000"
+                className="w-full bg-[#0b1329] border border-slate-800 rounded-xl px-4 py-3 text-white text-base font-sans font-bold focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                required
+              />
+            </div>
+            <span className="text-[11px] text-slate-500 block">
+              Total invoiced value produced today inclusive of GST
+            </span>
           </div>
 
-          {/* Row 2: 2 Separate Columns - GST Collections & Others */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>GST Collection (₹)</span>
-                <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-base font-mono">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  step="1"
-                  disabled={!isSameDay}
-                  value={gstPayment}
-                  onChange={(e) => setGstPayment(e.target.value)}
-                  placeholder="0"
-                  className={`w-full pl-9 pr-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-base font-bold focus:outline-none focus:border-[#0a84ff] transition-all ${
-                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
-                  }`}
-                  required
-                />
-              </div>
-              <span className="text-[11px] text-[#8e8e93]">Collections received against GST / Tax invoice</span>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-                <span>Others (₹)</span>
-                <span className="text-[#0a84ff] text-[11px] font-bold">Mandatory *</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-base font-mono">
-                  ₹
-                </span>
-                <input
-                  type="number"
-                  step="1"
-                  disabled={!isSameDay}
-                  value={otherPayment}
-                  onChange={(e) => setOtherPayment(e.target.value)}
-                  placeholder="0"
-                  className={`w-full pl-9 pr-4 py-3 rounded-xl bg-white/5 border border-white/15 text-white font-mono text-base font-bold focus:outline-none focus:border-[#0a84ff] transition-all ${
-                    !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
-                  }`}
-                  required
-                />
-              </div>
-              <span className="text-[11px] text-[#8e8e93]">Other collections (Enter 0 if nil)</span>
-            </div>
-          </div>
-
-          {/* Row 3: Timestamp */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold text-white/95 flex items-center justify-between">
-              <span>Payment Received Date &amp; Time</span>
-              <span className="text-[#8e8e93] text-[11px]">System Timestamp</span>
+          {/* Field 2: Other Billing */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 block">
+              Other Billing (₹)
             </label>
             <input
-              type="text"
+              type="number"
               disabled={!isSameDay}
-              value={paymentReceivedAt}
-              onChange={(e) => setPaymentReceivedAt(e.target.value)}
-              placeholder="e.g. 23-10-2026, 04:30 PM"
-              className={`w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/15 text-white text-xs font-mono focus:outline-none focus:border-[#0a84ff] transition-all ${
-                !isSameDay ? 'opacity-60 cursor-not-allowed' : ''
-              }`}
+              value={otherBilling}
+              onChange={(e) => setOtherBilling(e.target.value)}
+              placeholder="e.g. 5000"
+              className="w-full bg-[#0b1329] border border-slate-800 rounded-xl px-4 py-3 text-white text-base font-sans font-bold focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            <span className="text-[11px] text-slate-500 block">
+              Secondary or miscellaneous billing amount
+            </span>
           </div>
 
-          {/* Submit Button */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-end">
-            {isSameDay ? (
-              <button
-                type="submit"
-                className="px-8 py-3.5 rounded-2xl bg-[#30d158] hover:bg-[#30d158]/90 text-white text-sm font-bold shadow-lg shadow-[#30d158]/25 flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
-              >
-                <Check className="w-5 h-5" />
-                <span>Submit &amp; Publish to Super Admin</span>
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 text-xs text-[#8e8e93] bg-white/5 px-4 py-2.5 rounded-xl border border-white/10">
-                <Lock className="w-4 h-4 text-[#ff9f0a]" />
-                <span>Locked: Cannot edit past-day entries</span>
-              </div>
-            )}
+          {/* Field 3: Payment Collection */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 block">
+              Payment Collection (₹) <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="number"
+              disabled={!isSameDay}
+              value={paymentCollection}
+              onChange={(e) => setPaymentCollection(e.target.value)}
+              placeholder="e.g. 110000"
+              className="w-full bg-[#0b1329] border border-slate-800 rounded-xl px-4 py-3 text-emerald-400 text-base font-sans font-black focus:outline-none focus:border-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              required
+            />
+            <span className="text-[11px] text-slate-500 block">
+              Primary collection / funds received today
+            </span>
           </div>
-        </form>
-      </div>
 
-      {/* Submission Audit Log - STRICTLY LAST 7 DAYS DATA ONLY */}
-      <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
-          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <History className="w-4 h-4 text-[#0a84ff]" />
-            Submission Log ({company.name})
-          </span>
-          <span className="text-[11px] text-[#0a84ff] font-semibold px-2 py-0.5 rounded bg-[#0a84ff]/10 border border-[#0a84ff]/20">
-            Last 7 Days Records
+          {/* Field 4: Other Payment */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 block">
+              Other Payment (₹)
+            </label>
+            <input
+              type="number"
+              disabled={!isSameDay}
+              value={otherPayment}
+              onChange={(e) => setOtherPayment(e.target.value)}
+              placeholder="e.g. 5000"
+              className="w-full bg-[#0b1329] border border-slate-800 rounded-xl px-4 py-3 text-purple-400 text-base font-sans font-black focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span className="text-[11px] text-slate-500 block">
+              Other miscellaneous payments / receipts received
+            </span>
+          </div>
+        </div>
+
+        {/* Live Auto-Calculated Totals Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-[#0b1329] border border-slate-800">
+          <div>
+            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+              Total Invoiced Billing
+            </span>
+            <span className="text-lg font-black font-sans text-white mt-0.5 block">
+              ₹{calculatedTotalBilling.toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Billing with GST (₹{bWithGstNum.toLocaleString('en-IN')}) + Other Billing (₹{oBillNum.toLocaleString('en-IN')})
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider block">
+              Total Payment Received
+            </span>
+            <span className="text-lg font-black font-sans text-emerald-400 mt-0.5 block">
+              ₹{calculatedTotalPayment.toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Payment Collection (₹{pColNum.toLocaleString('en-IN')}) + Other Payment (₹{oPayNum.toLocaleString('en-IN')})
+            </span>
+          </div>
+        </div>
+
+        {/* Payment Timestamp */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-300 block">
+            Payment Realization Timestamp
+          </label>
+          <input
+            type="text"
+            disabled={!isSameDay}
+            value={paymentReceivedAt}
+            onChange={(e) => setPaymentReceivedAt(e.target.value)}
+            placeholder="e.g. 23-10-2026, 04:15 PM"
+            className="w-full bg-[#0b1329] border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs font-sans font-semibold focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-2 flex justify-end">
+          <button
+            type="submit"
+            disabled={!isSameDay}
+            className="w-full sm:w-auto px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Check className="w-4 h-4" />
+            <span>Submit & Publish to Super Admin</span>
+          </button>
+        </div>
+      </form>
+
+      {/* Submission Log Table (Strictly Last 7 Days, Matching Screenshot 2) */}
+      <div className="bg-[#111c38] rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History className="w-4 h-4 text-blue-400" />
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+              Submission Log ({company.name})
+            </h3>
+          </div>
+          <span className="text-xs text-slate-400 font-semibold bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+            Last 7 Days Data Only
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] uppercase tracking-wider text-[11px]">
-                <th className="py-2.5 px-4">Date</th>
-                <th className="py-2.5 px-4 text-right">Billing</th>
-                <th className="py-2.5 px-4 text-right">GST Collection</th>
-                <th className="py-2.5 px-4 text-right">Others</th>
-                <th className="py-2.5 px-4 text-right">Total Payment</th>
-                <th className="py-2.5 px-4 text-center">Payment Received At</th>
-                <th className="py-2.5 px-4 text-center">Status</th>
-                <th className="py-2.5 px-4 text-center">Action</th>
+              <tr className="border-b border-slate-800 bg-[#0b1329] text-slate-400 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-3.5">Date</th>
+                <th className="py-3 px-3 text-right">Billing with GST</th>
+                <th className="py-3 px-3 text-right">Other Billing</th>
+                <th className="py-3 px-3 text-right text-emerald-400">Payment Collection</th>
+                <th className="py-3 px-3 text-right text-purple-400">Other Payment</th>
+                <th className="py-3 px-3 text-center">Payment Received At</th>
+                <th className="py-3 px-3 text-center">Status</th>
+                <th className="py-3 px-3 text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-mono">
-              {/* Displaying ONLY last 7 days records */}
-              {history.slice(0, 7).map((h) => {
-                const canEditThisRow = h.date === todayDateStr || h.date === selectedDate;
-                const gstVal = h.gstPayment ?? Math.round(h.todayPayment * 0.75);
-                const otherVal = h.otherPayment ?? Math.round(h.todayPayment * 0.25);
+            <tbody className="divide-y divide-slate-800/60">
+              {last7DaysHistory.map((row) => {
+                const canEditThisRow = row.date === todayDateStr || row.date === selectedDate;
+                const rowBWithGst =
+                  row.billingWithGst ||
+                  (row.billing ? Math.round(row.billing * 1.18) : row.todayBilling);
+                const rowOBill = row.otherBilling || 0;
+                const rowPCol = row.paymentCollection || Math.round(row.todayPayment * 0.95);
+                const rowOPay = row.otherPayment || Math.round(row.todayPayment * 0.05);
+
                 return (
-                  <tr key={h.id} className="hover:bg-white/[0.03]">
-                    <td className="py-3 px-4 font-semibold text-white">{h.date}</td>
-                    <td className="py-3 px-4 text-right text-white">₹{h.todayBilling.toLocaleString('en-IN')}</td>
-                    <td className="py-3 px-4 text-right text-[#0a84ff] font-bold">₹{gstVal.toLocaleString('en-IN')}</td>
-                    <td className="py-3 px-4 text-right text-[#bf5af2] font-semibold">₹{otherVal.toLocaleString('en-IN')}</td>
-                    <td className="py-3 px-4 text-right text-[#30d158] font-bold">₹{h.todayPayment.toLocaleString('en-IN')}</td>
-                    <td className="py-3 px-4 text-center text-white/90 text-[11px]">{h.paymentReceivedAt || '-'}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#30d158]/15 text-[#30d158]">
+                  <tr key={row.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-3.5 font-bold font-sans text-white">
+                      {row.date}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-right font-bold font-sans text-slate-100">
+                      ₹{rowBWithGst.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-right font-bold font-sans text-slate-300">
+                      ₹{rowOBill.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
+                      ₹{rowPCol.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
+                      ₹{rowOPay.toLocaleString('en-IN')}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-center text-xs text-slate-300">
+                      {row.paymentReceivedAt || '-'}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-center">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                         <CheckCircle2 className="w-3 h-3" /> Recorded
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-center">
+
+                    <td className="py-3.5 px-3 text-center">
                       {canEditThisRow ? (
                         <button
                           type="button"
-                          onClick={() => handleEditRow(h.date)}
-                          className="px-2.5 py-1 rounded-lg bg-[#0a84ff]/20 hover:bg-[#0a84ff]/30 text-[#0a84ff] text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer transition-all"
-                          title="Edit today's submission"
+                          onClick={() => handleSelectDateToEdit(row.date)}
+                          className="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-bold border border-blue-500/30 transition-colors inline-flex items-center gap-1"
                         >
                           <Edit3 className="w-3 h-3" />
                           <span>Edit</span>
                         </button>
                       ) : (
                         <span
-                          className="px-2 py-0.5 rounded text-[10px] text-[#8e8e93] bg-white/5 border border-white/10 inline-flex items-center gap-1 cursor-not-allowed"
-                          title="Locked - Past day records cannot be edited"
+                          className="px-2 py-1 rounded-lg bg-slate-800 text-slate-500 text-[10px] font-bold border border-slate-700/60 inline-flex items-center gap-1 cursor-not-allowed"
+                          title="Locked - Can only edit on the same day"
                         >
-                          <Lock className="w-2.5 h-2.5 text-[#ff9f0a]" />
+                          <Lock className="w-3 h-3" />
                           <span>Locked</span>
                         </span>
                       )}

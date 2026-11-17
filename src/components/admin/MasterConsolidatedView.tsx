@@ -6,15 +6,11 @@ import { SYSTEM_ACCOUNTS } from '../../lib/companies';
 import {
   Building2,
   TrendingUp,
-  ArrowDownLeft,
   CheckCircle2,
   Clock,
   Edit2,
-  DollarSign,
-  Layers,
   ChevronRight,
   Calendar,
-  Percent,
   Key,
   Copy,
   Check,
@@ -23,6 +19,8 @@ import {
   Coins,
   ShieldCheck,
   RotateCcw,
+  Receipt,
+  CreditCard,
 } from 'lucide-react';
 
 interface MasterConsolidatedViewProps {
@@ -78,30 +76,40 @@ export default function MasterConsolidatedView({
 
   // Aggregated figures for PVD Division
   const pvdTotals = useMemo(() => {
-    const todayBilling = pvdSummaries.reduce((acc, s) => acc + s.todayBilling, 0);
-    const todayGst = pvdSummaries.reduce((acc, s) => acc + (s.todayGstPayment || 0), 0);
-    const todayOther = pvdSummaries.reduce((acc, s) => acc + (s.todayOtherPayment || 0), 0);
+    const billing = pvdSummaries.reduce((acc, s) => acc + s.billing, 0);
+    const otherBilling = pvdSummaries.reduce((acc, s) => acc + s.otherBilling, 0);
+    const billingWithGst = pvdSummaries.reduce((acc, s) => acc + s.billingWithGst, 0);
+    const paymentCollection = pvdSummaries.reduce((acc, s) => acc + s.paymentCollection, 0);
+    const otherPayment = pvdSummaries.reduce((acc, s) => acc + s.otherPayment, 0);
     const todayPayment = pvdSummaries.reduce((acc, s) => acc + s.todayPayment, 0);
+    const todayBilling = pvdSummaries.reduce((acc, s) => acc + s.todayBilling, 0);
+
     const monthBilling = pvdSummaries.reduce((acc, s) => acc + s.monthBilling, 0);
-    const monthGst = pvdSummaries.reduce((acc, s) => acc + (s.monthGstPayment || 0), 0);
-    const monthOther = pvdSummaries.reduce((acc, s) => acc + (s.monthOtherPayment || 0), 0);
+    const monthOtherBilling = pvdSummaries.reduce((acc, s) => acc + s.monthOtherBilling, 0);
+    const monthBillingWithGst = pvdSummaries.reduce((acc, s) => acc + s.monthBillingWithGst, 0);
+    const monthPaymentCollection = pvdSummaries.reduce((acc, s) => acc + s.monthPaymentCollection, 0);
+    const monthOtherPayment = pvdSummaries.reduce((acc, s) => acc + s.monthOtherPayment, 0);
     const monthPayment = pvdSummaries.reduce((acc, s) => acc + s.monthPayment, 0);
-    const netDifference = pvdSummaries.reduce((acc, s) => acc + s.netDifference, 0);
+
     const submittedCount = pvdSummaries.filter((s) => s.hasEntryToday).length;
     const recoveryRate = todayBilling > 0 ? ((todayPayment / todayBilling) * 100).toFixed(1) : '0.0';
     const monthRecoveryRate =
       monthBilling > 0 ? ((monthPayment / monthBilling) * 100).toFixed(1) : '0.0';
 
     return {
+      billing,
+      otherBilling,
+      billingWithGst,
+      paymentCollection,
+      otherPayment,
       todayBilling,
-      todayGst,
-      todayOther,
       todayPayment,
       monthBilling,
-      monthGst,
-      monthOther,
+      monthOtherBilling,
+      monthBillingWithGst,
+      monthPaymentCollection,
+      monthOtherPayment,
       monthPayment,
-      netDifference,
       submittedCount,
       totalCount: pvdSummaries.length,
       recoveryRate,
@@ -111,15 +119,21 @@ export default function MasterConsolidatedView({
 
   // Aggregated figures for Laser Division
   const laserTotals = useMemo(() => {
-    const todayBilling = laserSummaries.reduce((acc, s) => acc + s.todayBilling, 0);
-    const todayGst = laserSummaries.reduce((acc, s) => acc + (s.todayGstPayment || 0), 0);
-    const todayOther = laserSummaries.reduce((acc, s) => acc + (s.todayOtherPayment || 0), 0);
+    const billing = laserSummaries.reduce((acc, s) => acc + s.billing, 0);
+    const otherBilling = laserSummaries.reduce((acc, s) => acc + s.otherBilling, 0);
+    const billingWithGst = laserSummaries.reduce((acc, s) => acc + s.billingWithGst, 0);
+    const paymentCollection = laserSummaries.reduce((acc, s) => acc + s.paymentCollection, 0);
+    const otherPayment = laserSummaries.reduce((acc, s) => acc + s.otherPayment, 0);
     const todayPayment = laserSummaries.reduce((acc, s) => acc + s.todayPayment, 0);
+    const todayBilling = laserSummaries.reduce((acc, s) => acc + s.todayBilling, 0);
+
     const monthBilling = laserSummaries.reduce((acc, s) => acc + s.monthBilling, 0);
-    const monthGst = laserSummaries.reduce((acc, s) => acc + (s.monthGstPayment || 0), 0);
-    const monthOther = laserSummaries.reduce((acc, s) => acc + (s.monthOtherPayment || 0), 0);
+    const monthOtherBilling = laserSummaries.reduce((acc, s) => acc + s.monthOtherBilling, 0);
+    const monthBillingWithGst = laserSummaries.reduce((acc, s) => acc + s.monthBillingWithGst, 0);
+    const monthPaymentCollection = laserSummaries.reduce((acc, s) => acc + s.monthPaymentCollection, 0);
+    const monthOtherPayment = laserSummaries.reduce((acc, s) => acc + s.monthOtherPayment, 0);
     const monthPayment = laserSummaries.reduce((acc, s) => acc + s.monthPayment, 0);
-    const netDifference = laserSummaries.reduce((acc, s) => acc + s.netDifference, 0);
+
     const submittedCount = laserSummaries.filter((s) => s.hasEntryToday).length;
     const recoveryRate =
       todayBilling > 0 ? ((todayPayment / todayBilling) * 100).toFixed(1) : '0.0';
@@ -127,15 +141,19 @@ export default function MasterConsolidatedView({
       monthBilling > 0 ? ((monthPayment / monthBilling) * 100).toFixed(1) : '0.0';
 
     return {
+      billing,
+      otherBilling,
+      billingWithGst,
+      paymentCollection,
+      otherPayment,
       todayBilling,
-      todayGst,
-      todayOther,
       todayPayment,
       monthBilling,
-      monthGst,
-      monthOther,
+      monthOtherBilling,
+      monthBillingWithGst,
+      monthPaymentCollection,
+      monthOtherPayment,
       monthPayment,
-      netDifference,
       submittedCount,
       totalCount: laserSummaries.length,
       recoveryRate,
@@ -172,71 +190,79 @@ export default function MasterConsolidatedView({
     if (isIndividualView && singleSummary) {
       return {
         label: 'TOTAL - ' + singleSummary.company.name.toUpperCase(),
-        todayBilling: singleSummary.todayBilling,
-        todayGstPayment: singleSummary.todayGstPayment || 0,
-        todayOtherPayment: singleSummary.todayOtherPayment || 0,
+        billing: singleSummary.billing,
+        otherBilling: singleSummary.otherBilling,
+        billingWithGst: singleSummary.billingWithGst,
+        paymentCollection: singleSummary.paymentCollection,
+        otherPayment: singleSummary.otherPayment,
         todayPayment: singleSummary.todayPayment,
         monthBilling: singleSummary.monthBilling,
-        monthGstPayment: singleSummary.monthGstPayment || 0,
-        monthOtherPayment: singleSummary.monthOtherPayment || 0,
+        monthOtherBilling: singleSummary.monthOtherBilling,
+        monthBillingWithGst: singleSummary.monthBillingWithGst,
+        monthPaymentCollection: singleSummary.monthPaymentCollection,
+        monthOtherPayment: singleSummary.monthOtherPayment,
         monthPayment: singleSummary.monthPayment,
-        netDifference: singleSummary.netDifference,
         statusText: singleSummary.hasEntryToday ? 'Submitted' : 'Pending',
         collectionRate: singleSummary.collectionRate,
-        avgDailyBilling: singleSummary.avgDailyBilling,
       };
     }
 
     if (selectedDivision === 'PVD') {
       return {
         label: `PVD DIVISION TOTAL (${pvdTotals.totalCount} PLANTS)`,
-        todayBilling: pvdTotals.todayBilling,
-        todayGstPayment: pvdTotals.todayGst,
-        todayOtherPayment: pvdTotals.todayOther,
+        billing: pvdTotals.billing,
+        otherBilling: pvdTotals.otherBilling,
+        billingWithGst: pvdTotals.billingWithGst,
+        paymentCollection: pvdTotals.paymentCollection,
+        otherPayment: pvdTotals.otherPayment,
         todayPayment: pvdTotals.todayPayment,
         monthBilling: pvdTotals.monthBilling,
-        monthGstPayment: pvdTotals.monthGst,
-        monthOtherPayment: pvdTotals.monthOther,
+        monthOtherBilling: pvdTotals.monthOtherBilling,
+        monthBillingWithGst: pvdTotals.monthBillingWithGst,
+        monthPaymentCollection: pvdTotals.monthPaymentCollection,
+        monthOtherPayment: pvdTotals.monthOtherPayment,
         monthPayment: pvdTotals.monthPayment,
-        netDifference: pvdTotals.netDifference,
         statusText: `${pvdTotals.submittedCount}/${pvdTotals.totalCount} Done`,
         collectionRate: Number(pvdTotals.recoveryRate),
-        avgDailyBilling: Math.round(pvdTotals.monthBilling / 23),
       };
     }
 
     if (selectedDivision === 'LASER') {
       return {
         label: `LASER DIVISION TOTAL (${laserTotals.totalCount} PLANTS)`,
-        todayBilling: laserTotals.todayBilling,
-        todayGstPayment: laserTotals.todayGst,
-        todayOtherPayment: laserTotals.todayOther,
+        billing: laserTotals.billing,
+        otherBilling: laserTotals.otherBilling,
+        billingWithGst: laserTotals.billingWithGst,
+        paymentCollection: laserTotals.paymentCollection,
+        otherPayment: laserTotals.otherPayment,
         todayPayment: laserTotals.todayPayment,
         monthBilling: laserTotals.monthBilling,
-        monthGstPayment: laserTotals.monthGst,
-        monthOtherPayment: laserTotals.monthOther,
+        monthOtherBilling: laserTotals.monthOtherBilling,
+        monthBillingWithGst: laserTotals.monthBillingWithGst,
+        monthPaymentCollection: laserTotals.monthPaymentCollection,
+        monthOtherPayment: laserTotals.monthOtherPayment,
         monthPayment: laserTotals.monthPayment,
-        netDifference: laserTotals.netDifference,
         statusText: `${laserTotals.submittedCount}/${laserTotals.totalCount} Done`,
         collectionRate: Number(laserTotals.recoveryRate),
-        avgDailyBilling: Math.round(laserTotals.monthBilling / 23),
       };
     }
 
     return {
       label: 'GRAND TOTAL (ALL COMPANIES)',
-      todayBilling: grandTotal.todayBilling,
-      todayGstPayment: grandTotal.todayGstPayment || 0,
-      todayOtherPayment: grandTotal.todayOtherPayment || 0,
+      billing: grandTotal.billing,
+      otherBilling: grandTotal.otherBilling,
+      billingWithGst: grandTotal.billingWithGst,
+      paymentCollection: grandTotal.paymentCollection,
+      otherPayment: grandTotal.otherPayment,
       todayPayment: grandTotal.todayPayment,
       monthBilling: grandTotal.monthBilling,
-      monthGstPayment: grandTotal.monthGstPayment || 0,
-      monthOtherPayment: grandTotal.monthOtherPayment || 0,
+      monthOtherBilling: grandTotal.monthOtherBilling,
+      monthBillingWithGst: grandTotal.monthBillingWithGst,
+      monthPaymentCollection: grandTotal.monthPaymentCollection,
+      monthOtherPayment: grandTotal.monthOtherPayment,
       monthPayment: grandTotal.monthPayment,
-      netDifference: grandTotal.netDifference,
       statusText: `${grandTotal.submittedCount}/${grandTotal.totalCompanies} Done`,
       collectionRate: grandTotal.collectionRate,
-      avgDailyBilling: Math.round(grandTotal.monthBilling / 23),
     };
   }, [isIndividualView, singleSummary, selectedDivision, pvdTotals, laserTotals, grandTotal]);
 
@@ -252,22 +278,22 @@ export default function MasterConsolidatedView({
 
   return (
     <div className="space-y-6">
-      {/* 5 Executive Metric Cards - Powertech CRM Box Design */}
+      {/* 5 Executive Metric Cards Aligned with Screenshot 1 Columns */}
       {!isMonthly ? (
         // DAILY MATRIX METRIC CARDS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-          {/* Box 1: Today Total Billing */}
+          {/* Box 1: Billing (Base) */}
           <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Today Total Billing
+                Billing (Base)
               </span>
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
-                <TrendingUp className="w-4 h-4" />
+                <Receipt className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-white tracking-tight">
-              ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.billing.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block truncate">
               {isIndividualView
@@ -278,7 +304,25 @@ export default function MasterConsolidatedView({
             </span>
           </div>
 
-          {/* Box 2: Today Total Collections (Interactive Box) */}
+          {/* Box 2: Other Billing */}
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Other Billing
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black font-sans text-cyan-400 tracking-tight">
+              ₹{displayFooterTotal.otherBilling.toLocaleString('en-IN')}
+            </div>
+            <span className="text-xs text-slate-400 mt-2 block truncate">
+              Secondary billings today
+            </span>
+          </div>
+
+          {/* Box 3: Payment Collection (Interactive Box) */}
           <div
             onClick={() => setShowDivisionBoxes(!showDivisionBoxes)}
             className={`cursor-pointer p-5 rounded-2xl border shadow-xl transition-all select-none ${
@@ -290,7 +334,7 @@ export default function MasterConsolidatedView({
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>Today Collections</span>
+                <span>Payment Collection</span>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
                   Breakdown
                 </span>
@@ -300,92 +344,91 @@ export default function MasterConsolidatedView({
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
-              ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.paymentCollection.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block truncate">
-              PVD: ₹{pvdTotals.todayPayment.toLocaleString('en-IN')} • Laser: ₹
-              {laserTotals.todayPayment.toLocaleString('en-IN')}
+              PVD: ₹{pvdTotals.paymentCollection.toLocaleString('en-IN')} • Laser: ₹
+              {laserTotals.paymentCollection.toLocaleString('en-IN')}
             </span>
           </div>
 
-          {/* Box 3: GST Collections Box */}
+          {/* Box 4: Other Payment */}
           <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                GST Collections
+                Other Payment
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black font-sans text-purple-400 tracking-tight">
+              ₹{displayFooterTotal.otherPayment.toLocaleString('en-IN')}
+            </div>
+            <span className="text-xs text-slate-400 mt-2 block truncate">
+              PVD: ₹{pvdTotals.otherPayment.toLocaleString('en-IN')} • Laser: ₹
+              {laserTotals.otherPayment.toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          {/* Box 5: Including GST (Gross Invoiced Billing) */}
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Including GST
               </span>
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
                 <ShieldCheck className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-blue-400 tracking-tight">
-              ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.billingWithGst.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block truncate">
-              PVD: ₹{pvdTotals.todayGst.toLocaleString('en-IN')} • Laser: ₹
-              {laserTotals.todayGst.toLocaleString('en-IN')}
-            </span>
-          </div>
-
-          {/* Box 4: Others Collections Box */}
-          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Others Collections
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
-                <Boxes className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-sans text-purple-400 tracking-tight">
-              ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
-            </div>
-            <span className="text-xs text-slate-400 mt-2 block truncate">
-              PVD: ₹{pvdTotals.todayOther.toLocaleString('en-IN')} • Laser: ₹
-              {laserTotals.todayOther.toLocaleString('en-IN')}
-            </span>
-          </div>
-
-          {/* Box 5: Net Balance Box */}
-          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Net Group Balance
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
-                <DollarSign className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-sans text-amber-400 tracking-tight">
-              ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
-            </div>
-            <span className="text-xs text-slate-400 mt-2 block">
-              Net Outstanding Balance
+              Gross Billing with 18% GST
             </span>
           </div>
         </div>
       ) : (
         // MONTHLY CUMULATIVE METRIC CARDS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-          {/* MTD Total Billing */}
+          {/* MTD Billing (Base) */}
           <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                MTD Cumulative Billing
+                MTD Billing (Base)
               </span>
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
-                <TrendingUp className="w-4 h-4" />
+                <Receipt className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-white tracking-tight">
               ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block">
-              {monthName} Total Turnover
+              {monthName} Base Turnover
             </span>
           </div>
 
-          {/* MTD Total Payment (Interactive Box) */}
+          {/* MTD Other Billing */}
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                MTD Other Billing
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border border-cyan-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black font-sans text-cyan-400 tracking-tight">
+              ₹{displayFooterTotal.monthOtherBilling.toLocaleString('en-IN')}
+            </div>
+            <span className="text-xs text-slate-400 mt-2 block">
+              Cumulative Other Billings
+            </span>
+          </div>
+
+          {/* MTD Payment Collection (Interactive Box) */}
           <div
             onClick={() => setShowDivisionBoxes(!showDivisionBoxes)}
             className={`cursor-pointer p-5 rounded-2xl border shadow-xl transition-all select-none ${
@@ -407,69 +450,48 @@ export default function MasterConsolidatedView({
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
-              ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthPaymentCollection.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block truncate">
-              PVD: ₹{pvdTotals.monthPayment.toLocaleString('en-IN')} • Laser: ₹
-              {laserTotals.monthPayment.toLocaleString('en-IN')}
+              PVD: ₹{pvdTotals.monthPaymentCollection.toLocaleString('en-IN')} • Laser: ₹
+              {laserTotals.monthPaymentCollection.toLocaleString('en-IN')}
             </span>
           </div>
 
-          {/* MTD GST Collections */}
+          {/* MTD Other Payment */}
           <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                MTD GST Collections
+                MTD Other Payment
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black font-sans text-purple-400 tracking-tight">
+              ₹{displayFooterTotal.monthOtherPayment.toLocaleString('en-IN')}
+            </div>
+            <span className="text-xs text-slate-400 mt-2 block truncate">
+              PVD: ₹{pvdTotals.monthOtherPayment.toLocaleString('en-IN')} • Laser: ₹
+              {laserTotals.monthOtherPayment.toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          {/* MTD Including GST */}
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                MTD Including GST
               </span>
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
                 <ShieldCheck className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-black font-sans text-blue-400 tracking-tight">
-              ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')}
-            </div>
-            <span className="text-xs text-slate-400 mt-2 block truncate">
-              PVD: ₹{pvdTotals.monthGst.toLocaleString('en-IN')} • Laser: ₹
-              {laserTotals.monthGst.toLocaleString('en-IN')}
-            </span>
-          </div>
-
-          {/* Group Recovery Rate */}
-          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Group Recovery Rate
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                <Percent className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
-              {displayFooterTotal.collectionRate}%
-            </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-              <div
-                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(100, displayFooterTotal.collectionRate)}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Net Pending Receivables */}
-          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Net Outstanding
-              </span>
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
-                <DollarSign className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="text-2xl font-black font-sans text-amber-400 tracking-tight">
-              ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
+              ₹{displayFooterTotal.monthBillingWithGst.toLocaleString('en-IN')}
             </div>
             <span className="text-xs text-slate-400 mt-2 block">
-              Unsettled Billing MTD
+              Cumulative Billing with GST
             </span>
           </div>
         </div>
@@ -492,7 +514,7 @@ export default function MasterConsolidatedView({
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors"
+                className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Show All Companies</span>
@@ -539,24 +561,24 @@ export default function MasterConsolidatedView({
                 </div>
               </div>
 
-              {/* Sub-breakdown: GST vs Others */}
+              {/* Sub-breakdown: Payment Collection vs Other Payment */}
               <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
                 <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
                   <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
-                    GST Collection
+                    Payment Collection
                   </span>
-                  <span className="text-base font-bold font-sans text-blue-400 mt-1 block">
+                  <span className="text-base font-bold font-sans text-emerald-400 mt-1 block">
                     ₹
-                    {(isMonthly ? pvdTotals.monthGst : pvdTotals.todayGst).toLocaleString('en-IN')}
+                    {(isMonthly ? pvdTotals.monthPaymentCollection : pvdTotals.paymentCollection).toLocaleString('en-IN')}
                   </span>
                 </div>
                 <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
                   <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
-                    Others Collection
+                    Other Payment
                   </span>
                   <span className="text-base font-bold font-sans text-purple-400 mt-1 block">
                     ₹
-                    {(isMonthly ? pvdTotals.monthOther : pvdTotals.todayOther).toLocaleString(
+                    {(isMonthly ? pvdTotals.monthOtherPayment : pvdTotals.otherPayment).toLocaleString(
                       'en-IN'
                     )}
                   </span>
@@ -616,26 +638,26 @@ export default function MasterConsolidatedView({
                 </div>
               </div>
 
-              {/* Sub-breakdown: GST vs Others */}
+              {/* Sub-breakdown: Payment Collection vs Other Payment */}
               <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
                 <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
                   <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
-                    GST Collection
+                    Payment Collection
                   </span>
-                  <span className="text-base font-bold font-sans text-blue-400 mt-1 block">
+                  <span className="text-base font-bold font-sans text-emerald-400 mt-1 block">
                     ₹
-                    {(isMonthly ? laserTotals.monthGst : laserTotals.todayGst).toLocaleString(
+                    {(isMonthly ? laserTotals.monthPaymentCollection : laserTotals.paymentCollection).toLocaleString(
                       'en-IN'
                     )}
                   </span>
                 </div>
                 <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
                   <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
-                    Others Collection
+                    Other Payment
                   </span>
                   <span className="text-base font-bold font-sans text-purple-400 mt-1 block">
                     ₹
-                    {(isMonthly ? laserTotals.monthOther : laserTotals.todayOther).toLocaleString(
+                    {(isMonthly ? laserTotals.monthOtherPayment : laserTotals.otherPayment).toLocaleString(
                       'en-IN'
                     )}
                   </span>
@@ -678,7 +700,7 @@ export default function MasterConsolidatedView({
             <button
               type="button"
               onClick={() => handleSelectDivision('ALL')}
-              className={`py-1.5 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all cursor-pointer ${
                 selectedDivision === 'ALL'
                   ? 'bg-slate-800 text-white font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -689,7 +711,7 @@ export default function MasterConsolidatedView({
             <button
               type="button"
               onClick={() => handleSelectDivision('LASER')}
-              className={`py-1.5 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all cursor-pointer ${
                 selectedDivision === 'LASER'
                   ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30'
                   : 'text-slate-400 hover:text-blue-400'
@@ -700,7 +722,7 @@ export default function MasterConsolidatedView({
             <button
               type="button"
               onClick={() => handleSelectDivision('PVD')}
-              className={`py-1.5 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all cursor-pointer ${
                 selectedDivision === 'PVD'
                   ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30'
                   : 'text-slate-400 hover:text-purple-400'
@@ -714,7 +736,7 @@ export default function MasterConsolidatedView({
           <button
             type="button"
             onClick={() => setShowAccountsModal(true)}
-            className="w-full py-2.5 px-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-white text-xs font-semibold flex items-center justify-between transition-all text-left"
+            className="w-full py-2.5 px-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-white text-xs font-semibold flex items-center justify-between transition-all text-left cursor-pointer"
           >
             <span className="flex items-center gap-2">
               <Key className="w-3.5 h-3.5 text-blue-400" />
@@ -729,7 +751,7 @@ export default function MasterConsolidatedView({
           <button
             type="button"
             onClick={handleResetFilters}
-            className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs font-semibold ${
+            className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs font-semibold cursor-pointer ${
               selectedCompanyFilter === null && selectedDivision === 'ALL'
                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
@@ -754,7 +776,7 @@ export default function MasterConsolidatedView({
                   key={s.company.id}
                   type="button"
                   onClick={() => setSelectedCompanyFilter(isSelected ? null : s.company.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs ${
+                  className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs cursor-pointer ${
                     isSelected
                       ? 'bg-slate-800 text-white font-bold border border-slate-700'
                       : 'text-slate-300 hover:text-white hover:bg-slate-900/70'
@@ -779,7 +801,7 @@ export default function MasterConsolidatedView({
                       {isPvd ? 'PVD' : 'LASER'}
                     </span>
                     <span className="text-xs font-bold font-sans text-slate-400">
-                      ₹{Math.round((isMonthly ? s.monthBilling : s.todayBilling) / 1000)}k
+                      ₹{Math.round((isMonthly ? s.monthBilling : s.billing) / 1000)}k
                     </span>
                   </div>
                 </button>
@@ -845,7 +867,7 @@ export default function MasterConsolidatedView({
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="text-xs text-blue-400 hover:underline font-semibold flex items-center gap-1 pr-2"
+                  className="text-xs text-blue-400 hover:underline font-semibold flex items-center gap-1 pr-2 cursor-pointer"
                 >
                   <span>Show All Companies</span>
                 </button>
@@ -889,7 +911,7 @@ export default function MasterConsolidatedView({
               <button
                 type="button"
                 onClick={() => setSelectedDivision('ALL')}
-                className="underline hover:text-white text-[11px] font-bold"
+                className="underline hover:text-white text-[11px] font-bold cursor-pointer"
               >
                 Clear Division Filter
               </button>
@@ -899,19 +921,17 @@ export default function MasterConsolidatedView({
           {/* TABLE DISPLAY */}
           <div className="overflow-x-auto">
             {!isMonthly ? (
-              // DAILY MATRIX TABLE
+              // DAILY MATRIX TABLE (STRICTLY SCREENSHOT 1 COLUMNS - NO NET BALANCER)
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-slate-800 bg-[#0b1329] text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
-                    <th className="py-3 px-3 text-right">Today Billing</th>
-                    <th className="py-3 px-3 text-right text-blue-400">GST Collection</th>
-                    <th className="py-3 px-3 text-right text-purple-400">Others</th>
-                    <th className="py-3 px-3 text-right text-emerald-400">Today Payment</th>
-                    <th className="py-3 px-3 text-center">Payment Received Date & Time</th>
-                    <th className="py-3 px-3 text-right">Total Bill (MTD)</th>
-                    <th className="py-3 px-3 text-right">Total Payment (TP)</th>
-                    <th className="py-3 px-3 text-right">Net Balance</th>
+                    <th className="py-3 px-3 text-right">Billing</th>
+                    <th className="py-3 px-3 text-right text-cyan-400">Other Billing</th>
+                    <th className="py-3 px-3 text-right text-emerald-400">Payment Collection</th>
+                    <th className="py-3 px-3 text-right text-purple-400">Other Payment</th>
+                    <th className="py-3 px-3 text-right text-blue-400">Including GST</th>
+                    <th className="py-3 px-3 text-center">Payment Received Date &amp; Time</th>
                     <th className="py-3 px-3 text-center">Status</th>
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
@@ -953,23 +973,32 @@ export default function MasterConsolidatedView({
                           </div>
                         </td>
 
+                        {/* Column 2: Billing (Base) */}
                         <td className="py-3.5 px-3 text-right font-bold font-sans text-slate-100">
-                          ₹{item.todayBilling.toLocaleString('en-IN')}
+                          ₹{item.billing.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-bold font-sans text-blue-400">
-                          ₹{(item.todayGstPayment || 0).toLocaleString('en-IN')}
+                        {/* Column 3: Other Billing */}
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-cyan-400">
+                          ₹{(item.otherBilling || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
-                          ₹{(item.todayOtherPayment || 0).toLocaleString('en-IN')}
-                        </td>
-
+                        {/* Column 4: Payment Collection */}
                         <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
-                          ₹{item.todayPayment.toLocaleString('en-IN')}
+                          ₹{(item.paymentCollection || 0).toLocaleString('en-IN')}
                         </td>
 
-                        {/* Payment Received Date & Time Column */}
+                        {/* Column 5: Other Payment */}
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
+                          ₹{(item.otherPayment || 0).toLocaleString('en-IN')}
+                        </td>
+
+                        {/* Column 6: Including GST */}
+                        <td className="py-3.5 px-3 text-right font-black font-sans text-blue-400">
+                          ₹{(item.billingWithGst || 0).toLocaleString('en-IN')}
+                        </td>
+
+                        {/* Column 7: Payment Received Date & Time */}
                         <td className="py-3.5 px-3 text-center text-xs">
                           {item.todayPayment > 0 ? (
                             <div className="inline-flex flex-col items-center">
@@ -988,24 +1017,7 @@ export default function MasterConsolidatedView({
                           )}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-semibold font-sans text-slate-200">
-                          ₹{item.monthBilling.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-right font-bold font-sans text-emerald-400">
-                          ₹{item.monthPayment.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-right font-bold font-sans">
-                          <span
-                            className={
-                              item.netDifference >= 0 ? 'text-amber-400' : 'text-emerald-400'
-                            }
-                          >
-                            ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
-                          </span>
-                        </td>
-
+                        {/* Column 8: Status */}
                         <td className="py-3.5 px-3 text-center">
                           {item.hasEntryToday ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
@@ -1018,11 +1030,12 @@ export default function MasterConsolidatedView({
                           )}
                         </td>
 
+                        {/* Column 9: Action */}
                         <td className="py-3.5 px-3 text-center">
                           <button
                             type="button"
                             onClick={() => onEditCompany(item.company.id)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer"
                           >
                             <Edit2 className="w-3 h-3 text-blue-400" />
                             <span>Edit</span>
@@ -1040,28 +1053,22 @@ export default function MasterConsolidatedView({
                       {displayFooterTotal.label}
                     </td>
                     <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
-                      ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.billing.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
-                      ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-purple-400">
-                      ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-cyan-400">
+                      ₹{displayFooterTotal.otherBilling.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
-                      ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
+                      ₹{displayFooterTotal.paymentCollection.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-purple-400">
+                      ₹{displayFooterTotal.otherPayment.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
+                      ₹{displayFooterTotal.billingWithGst.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-center text-xs text-slate-300">
                       Live Timestamped
-                    </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
-                      ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
-                      ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-amber-400">
-                      ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-center text-xs text-slate-300">
                       {displayFooterTotal.statusText}
@@ -1073,18 +1080,17 @@ export default function MasterConsolidatedView({
                 </tfoot>
               </table>
             ) : (
-              // MONTHLY CUMULATIVE TABLE
+              // MONTHLY CUMULATIVE TABLE (NO NET BALANCER)
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-slate-800 bg-[#0b1329] text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
-                    <th className="py-3 px-3 text-right">Month Billing (MTD)</th>
-                    <th className="py-3 px-3 text-right text-blue-400">GST Collection (MTD)</th>
-                    <th className="py-3 px-3 text-right text-purple-400">Others (MTD)</th>
-                    <th className="py-3 px-3 text-right text-emerald-400">Month Payment (TP)</th>
-                    <th className="py-3 px-3 text-right">Net Balance</th>
+                    <th className="py-3 px-3 text-right">Billing (MTD)</th>
+                    <th className="py-3 px-3 text-right text-cyan-400">Other Billing (MTD)</th>
+                    <th className="py-3 px-3 text-right text-emerald-400">Payment Collection (MTD)</th>
+                    <th className="py-3 px-3 text-right text-purple-400">Other Payment (MTD)</th>
+                    <th className="py-3 px-3 text-right text-blue-400">Including GST (MTD)</th>
                     <th className="py-3 px-3 text-center">Collection %</th>
-                    <th className="py-3 px-3 text-right">Avg Daily Billing</th>
                     <th className="py-3 px-3 text-center">Latest Payment Received At</th>
                     <th className="py-3 px-3 text-center">Status</th>
                     <th className="py-3 px-3 text-center">Action</th>
@@ -1127,30 +1133,24 @@ export default function MasterConsolidatedView({
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-bold font-sans text-white">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-slate-100">
                           ₹{item.monthBilling.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-bold font-sans text-blue-400">
-                          ₹{(item.monthGstPayment || 0).toLocaleString('en-IN')}
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-cyan-400">
+                          ₹{(item.monthOtherBilling || 0).toLocaleString('en-IN')}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
+                          ₹{(item.monthPaymentCollection || 0).toLocaleString('en-IN')}
                         </td>
 
                         <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
                           ₹{(item.monthOtherPayment || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
-                          ₹{item.monthPayment.toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-right font-bold font-sans">
-                          <span
-                            className={
-                              item.netDifference >= 0 ? 'text-amber-400' : 'text-emerald-400'
-                            }
-                          >
-                            ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
-                          </span>
+                        <td className="py-3.5 px-3 text-right font-black font-sans text-blue-400">
+                          ₹{(item.monthBillingWithGst || 0).toLocaleString('en-IN')}
                         </td>
 
                         <td className="py-3.5 px-3 text-center">
@@ -1165,10 +1165,6 @@ export default function MasterConsolidatedView({
                               />
                             </div>
                           </div>
-                        </td>
-
-                        <td className="py-3.5 px-3 text-right font-semibold font-sans text-slate-200">
-                          ₹{item.avgDailyBilling.toLocaleString('en-IN')}
                         </td>
 
                         <td className="py-3.5 px-3 text-center text-xs text-slate-300 font-sans">
@@ -1186,7 +1182,7 @@ export default function MasterConsolidatedView({
                           <button
                             type="button"
                             onClick={() => onEditCompany(item.company.id)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1 cursor-pointer"
                           >
                             <Edit2 className="w-3 h-3 text-blue-400" />
                             <span>Edit</span>
@@ -1206,32 +1202,29 @@ export default function MasterConsolidatedView({
                     <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
                       ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
-                      ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')}
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-cyan-400">
+                      ₹{displayFooterTotal.monthOtherBilling.toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
+                      ₹{displayFooterTotal.monthPaymentCollection.toLocaleString('en-IN')}
                     </td>
                     <td className="py-4 px-3 text-right font-sans text-sm font-black text-purple-400">
                       ₹{displayFooterTotal.monthOtherPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
-                      ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
+                      ₹{displayFooterTotal.monthBillingWithGst.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-amber-400">
-                      ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-4 px-3 text-center font-sans text-xs font-black text-emerald-400">
+                    <td className="py-4 px-3 text-center text-xs text-slate-300">
                       {displayFooterTotal.collectionRate}%
                     </td>
-                    <td className="py-4 px-3 text-right font-sans text-xs text-slate-300">
-                      ₹{displayFooterTotal.avgDailyBilling.toLocaleString('en-IN')} /day
+                    <td className="py-4 px-3 text-center text-xs text-slate-300">
+                      Audited
                     </td>
-                    <td className="py-4 px-3 text-center text-xs text-slate-300 font-sans">
-                      All Recorded
-                    </td>
-                    <td className="py-4 px-3 text-center text-xs font-bold text-emerald-400">
-                      100% Closed
+                    <td className="py-4 px-3 text-center text-xs text-slate-300">
+                      {displayFooterTotal.statusText}
                     </td>
                     <td className="py-4 px-3 text-center">
-                      <span className="text-xs font-bold text-slate-400">Audited</span>
+                      <span className="text-xs font-bold text-slate-400">Verified</span>
                     </td>
                   </tr>
                 </tfoot>
@@ -1241,105 +1234,73 @@ export default function MasterConsolidatedView({
         </div>
       </div>
 
-      {/* Super Admin Modal: Company Accounts & Passwords Directory */}
+      {/* Password & Credential Modal for Super Admin */}
       {showAccountsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-3xl bg-[#0d1527] border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-[#0d1527] border border-slate-700 rounded-2xl p-6 sm:p-7 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center border border-blue-500/30">
                   <Key className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                    Company Accounts & Credentials
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
-                      Super Admin Private
-                    </span>
-                  </h2>
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    Operating Company Credentials
+                  </h3>
                   <p className="text-xs text-slate-400">
-                    Share these credentials with operating unit branch managers to log into their
-                    respective portals.
+                    Direct access logins for company operators
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => setShowAccountsModal(false)}
                 type="button"
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                onClick={() => setShowAccountsModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-slate-800">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#0b1329] border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px] font-bold">
-                    <th className="py-3 px-4">Company Name</th>
-                    <th className="py-3 px-3">Username</th>
-                    <th className="py-3 px-3">Email Address</th>
-                    <th className="py-3 px-3">Access Password</th>
-                    <th className="py-3 px-3 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {companyAccounts.map((acc) => {
-                    const isCopied = copiedId === acc.id;
-                    const credText =
-                      'Company: ' +
-                      acc.name +
-                      '\nUsername: ' +
-                      acc.username +
-                      '\nEmail: ' +
-                      acc.email +
-                      '\nPassword: ' +
-                      acc.pass;
-                    return (
-                      <tr key={acc.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4">
-                          <span className="font-bold text-white block">{acc.name}</span>
-                          <span className="text-[10px] text-slate-400">{acc.id}</span>
-                        </td>
-                        <td className="py-3 px-3 font-semibold text-slate-200">{acc.username}</td>
-                        <td className="py-3 px-3 text-slate-400 text-xs">{acc.email}</td>
-                        <td className="py-3 px-3 font-bold text-emerald-400">{acc.pass}</td>
-                        <td className="py-3 px-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(acc.id, credText)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1.5"
-                          >
-                            {isCopied ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400">Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3 text-blue-400" />
-                                <span>Copy</span>
-                              </>
-                            )}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+              {companyAccounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  className="p-3.5 rounded-xl bg-[#0b1329] border border-slate-800 flex items-center justify-between gap-3 text-xs"
+                >
+                  <div>
+                    <div className="font-bold text-white font-sans">{acc.companyName}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      Username: <code className="text-blue-400 font-mono">{acc.username}</code> • Password: <code className="text-emerald-400 font-mono">{acc.pass}</code>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(acc.id, `${acc.username} / ${acc.pass}`)}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {copiedId === acc.id ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              ))}
             </div>
 
-            <div className="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between">
-              <span className="text-xs text-slate-400">
-                Registered Operating Entities ({companyAccounts.length})
-              </span>
+            <div className="pt-4 mt-5 border-t border-slate-800 flex justify-end">
               <button
                 type="button"
                 onClick={() => setShowAccountsModal(false)}
-                className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-600/20"
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold cursor-pointer"
               >
-                Close Directory
+                Done
               </button>
             </div>
           </div>

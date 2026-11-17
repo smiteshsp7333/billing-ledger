@@ -15,48 +15,60 @@ export interface CompanyDailyEntry {
   companyId: string;
   companyName: string;
   date: string; // YYYY-MM-DD
-  todayBilling: number; // Today Billing value (INR)
-  gstPayment: number; // GST Collection (INR)
-  otherPayment: number; // Others / Other Collection (INR)
-  todayPayment: number; // Total Collection = gstPayment + otherPayment (INR)
+  billing: number; // Base Billing before GST (e.g. 100000)
+  otherBilling: number; // Other Billing (e.g. 5000)
+  billingWithGst: number; // Including GST (e.g. 118000)
+  paymentCollection: number; // Payment Collection (e.g. 110000)
+  otherPayment: number; // Other Payment (e.g. 5000)
+  todayBilling: number; // Total Billing = billingWithGst + otherBilling
+  todayPayment: number; // Total Payment = paymentCollection + otherPayment
+  gstPayment?: number; // Legacy compatibility
   purchaseValue?: number; // Optional
-  notes?: string; // Optional remarks / narration
+  notes?: string;
   paymentMode?: 'CASH' | 'BANK_TRANSFER' | 'UPI' | 'CHEQUE';
-  paymentReceivedAt?: string; // e.g. "23-10-2026, 04:15 PM"
+  paymentReceivedAt?: string;
   submittedBy?: string;
   submittedAt: string;
 }
 
 export interface CompanySummary {
   company: GroupCompany;
+  billing: number; // Base Billing
+  otherBilling: number; // Other Billing
+  billingWithGst: number; // Including GST
+  paymentCollection: number; // Payment Collection
+  otherPayment: number; // Other Payment
   todayBilling: number;
-  todayGstPayment: number;
-  todayOtherPayment: number;
   todayPayment: number;
   monthBilling: number;
-  monthGstPayment: number;
+  monthOtherBilling: number;
+  monthBillingWithGst: number;
+  monthPaymentCollection: number;
   monthOtherPayment: number;
   monthPayment: number;
-  netDifference: number; // Total Bill - Total Payment
   hasEntryToday: boolean;
   notes?: string;
   paymentMode?: string;
   paymentReceivedAt?: string;
   lastUpdated?: string;
-  collectionRate: number; // Percentage
+  collectionRate: number;
   avgDailyBilling: number;
 }
 
 export interface GroupGrandTotal {
+  billing: number;
+  otherBilling: number;
+  billingWithGst: number;
+  paymentCollection: number;
+  otherPayment: number;
   todayBilling: number;
-  todayGstPayment: number;
-  todayOtherPayment: number;
   todayPayment: number;
   monthBilling: number;
-  monthGstPayment: number;
+  monthOtherBilling: number;
+  monthBillingWithGst: number;
+  monthPaymentCollection: number;
   monthOtherPayment: number;
   monthPayment: number;
-  netDifference: number;
   submittedCount: number;
   totalCompanies: number;
   collectionRate: number;
