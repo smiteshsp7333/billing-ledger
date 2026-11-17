@@ -56,9 +56,9 @@ export default function ExecutiveHeader({
   const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
 
   return (
-    <header className="sticky top-0 z-40 bg-[#121214]/85 backdrop-blur-2xl border-b border-white/10 transition-all">
+    <header className="sticky top-0 z-40 bg-[#0d1527]/95 backdrop-blur-2xl border-b border-slate-800 transition-all">
       {/* Top Status Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2.5 pb-2 flex items-center justify-between text-xs border-b border-white/5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-2.5 pb-2 flex items-center justify-between text-xs border-b border-slate-800/60">
         <div className="flex items-center gap-3">
           <span className="font-semibold text-white/90 font-mono tracking-wide">{timeStr}</span>
           <span className="h-3 w-px bg-white/20" />
@@ -78,7 +78,7 @@ export default function ExecutiveHeader({
                 <Building2 className="w-3.5 h-3.5 text-[#30d158]" />
               )}
               <span className="font-semibold text-white/95">{currentUser.name}</span>
-              <span className="text-[10px] font-bold text-[#8e8e93] px-1.5 py-0.5 rounded bg-white/10 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-slate-400 px-1.5 py-0.5 rounded bg-white/10 uppercase tracking-wider">
                 {currentUser.role === 'SUPER_ADMIN' ? 'SUPER ADMIN' : 'COMPANY PORTAL'}
               </span>
             </div>

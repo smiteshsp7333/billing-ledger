@@ -252,20 +252,24 @@ export default function MasterConsolidatedView({
 
   return (
     <div className="space-y-6">
-      {/* 5 Executive Metric Cards - Clickable Boxed Views */}
+      {/* 5 Executive Metric Cards - Powertech CRM Box Design */}
       {!isMonthly ? (
         // DAILY MATRIX METRIC CARDS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* Box 1: Today Total Billing */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg transition-all hover:border-white/20">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>Today Total Billing</span>
-              <TrendingUp className="w-4 h-4 text-[#0a84ff]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Today Total Billing
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-white">
+            <div className="text-2xl font-black font-sans text-white tracking-tight">
               ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               {isIndividualView
                 ? `Unit: ${singleSummary?.company.name}`
                 : selectedDivision !== 'ALL'
@@ -274,74 +278,88 @@ export default function MasterConsolidatedView({
             </span>
           </div>
 
-          {/* Box 2: Today Total Collections / Payments (Interactive Box) */}
+          {/* Box 2: Today Total Collections (Interactive Box) */}
           <div
             onClick={() => setShowDivisionBoxes(!showDivisionBoxes)}
-            className={`cursor-pointer p-4 rounded-2xl border backdrop-blur-2xl transition-all shadow-lg select-none ${
+            className={`cursor-pointer p-5 rounded-2xl border shadow-xl transition-all select-none ${
               showDivisionBoxes
-                ? 'bg-[#30d158]/10 border-[#30d158]/40 ring-1 ring-[#30d158]/30'
-                : 'bg-[#1c1c1e]/80 border-white/10 hover:border-[#30d158]/40'
+                ? 'bg-[#111c38] border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-emerald-500/5'
+                : 'bg-[#111c38] border-slate-800/80 hover:border-emerald-500/50'
             }`}
             title="Click to toggle PVD vs Laser collections breakdown"
           >
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span className="flex items-center gap-1.5 font-semibold text-white">
-                <Coins className="w-3.5 h-3.5 text-[#30d158]" />
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                 <span>Today Collections</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                  Breakdown
+                </span>
               </span>
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#30d158]/20 text-[#30d158]">
-                {showDivisionBoxes ? 'Breakdown Active' : 'Click to Split'}
-              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <Coins className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#30d158]">
+            <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
               ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] font-medium mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               PVD: ₹{pvdTotals.todayPayment.toLocaleString('en-IN')} • Laser: ₹
               {laserTotals.todayPayment.toLocaleString('en-IN')}
             </span>
           </div>
 
           {/* Box 3: GST Collections Box */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg transition-all hover:border-white/20">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>GST Collections</span>
-              <ShieldCheck className="w-4 h-4 text-[#0a84ff]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                GST Collections
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#0a84ff]">
+            <div className="text-2xl font-black font-sans text-blue-400 tracking-tight">
               ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               PVD: ₹{pvdTotals.todayGst.toLocaleString('en-IN')} • Laser: ₹
               {laserTotals.todayGst.toLocaleString('en-IN')}
             </span>
           </div>
 
           {/* Box 4: Others Collections Box */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg transition-all hover:border-white/20">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>Others Collections</span>
-              <Boxes className="w-4 h-4 text-[#bf5af2]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Others Collections
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center border border-purple-500/20">
+                <Boxes className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#bf5af2]">
+            <div className="text-2xl font-black font-sans text-purple-400 tracking-tight">
               ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               PVD: ₹{pvdTotals.todayOther.toLocaleString('en-IN')} • Laser: ₹
               {laserTotals.todayOther.toLocaleString('en-IN')}
             </span>
           </div>
 
           {/* Box 5: Net Balance Box */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg transition-all hover:border-white/20">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>Net Group Balance</span>
-              <DollarSign className="w-4 h-4 text-[#ff9f0a]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl transition-all hover:border-slate-700">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Net Group Balance
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+                <DollarSign className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#ff9f0a]">
+            <div className="text-2xl font-black font-sans text-amber-400 tracking-tight">
               ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block">
+            <span className="text-xs text-slate-400 mt-2 block">
               Net Outstanding Balance
             </span>
           </div>
@@ -350,15 +368,19 @@ export default function MasterConsolidatedView({
         // MONTHLY CUMULATIVE METRIC CARDS
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* MTD Total Billing */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>MTD Cumulative Billing</span>
-              <TrendingUp className="w-4 h-4 text-[#0a84ff]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                MTD Cumulative Billing
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-white">
+            <div className="text-2xl font-black font-sans text-white tracking-tight">
               ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block">
+            <span className="text-xs text-slate-400 mt-2 block">
               {monthName} Total Turnover
             </span>
           </div>
@@ -366,98 +388,113 @@ export default function MasterConsolidatedView({
           {/* MTD Total Payment (Interactive Box) */}
           <div
             onClick={() => setShowDivisionBoxes(!showDivisionBoxes)}
-            className={`cursor-pointer p-4 rounded-2xl border backdrop-blur-2xl transition-all shadow-lg select-none ${
+            className={`cursor-pointer p-5 rounded-2xl border shadow-xl transition-all select-none ${
               showDivisionBoxes
-                ? 'bg-[#30d158]/10 border-[#30d158]/40 ring-1 ring-[#30d158]/30'
-                : 'bg-[#1c1c1e]/80 border-white/10 hover:border-[#30d158]/40'
+                ? 'bg-[#111c38] border-emerald-500/60 ring-1 ring-emerald-500/40'
+                : 'bg-[#111c38] border-slate-800/80 hover:border-emerald-500/50'
             }`}
             title="Click to toggle PVD vs Laser MTD split"
           >
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span className="flex items-center gap-1.5 font-semibold text-white">
-                <Coins className="w-3.5 h-3.5 text-[#30d158]" />
-                <span>MTD Collections (TP)</span>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>MTD Collections</span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">
+                  Breakdown
+                </span>
               </span>
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#30d158]/20 text-[#30d158]">
-                {showDivisionBoxes ? 'Breakdown Active' : 'Click to Split'}
-              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <Coins className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#30d158]">
+            <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
               ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] font-medium mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               PVD: ₹{pvdTotals.monthPayment.toLocaleString('en-IN')} • Laser: ₹
               {laserTotals.monthPayment.toLocaleString('en-IN')}
             </span>
           </div>
 
           {/* MTD GST Collections */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>MTD GST Collections</span>
-              <ShieldCheck className="w-4 h-4 text-[#0a84ff]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                MTD GST Collections
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#0a84ff]">
+            <div className="text-2xl font-black font-sans text-blue-400 tracking-tight">
               ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block truncate">
+            <span className="text-xs text-slate-400 mt-2 block truncate">
               PVD: ₹{pvdTotals.monthGst.toLocaleString('en-IN')} • Laser: ₹
               {laserTotals.monthGst.toLocaleString('en-IN')}
             </span>
           </div>
 
           {/* Group Recovery Rate */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>Group Recovery Rate</span>
-              <Percent className="w-4 h-4 text-[#30d158]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Group Recovery Rate
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <Percent className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#30d158]">
+            <div className="text-2xl font-black font-sans text-emerald-400 tracking-tight">
               {displayFooterTotal.collectionRate}%
             </div>
-            <div className="w-full bg-white/10 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
-                className="bg-[#30d158] h-full rounded-full transition-all duration-500"
+                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, displayFooterTotal.collectionRate)}%` }}
               />
             </div>
           </div>
 
           {/* Net Pending Receivables */}
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10 shadow-lg">
-            <div className="flex items-center justify-between text-[#8e8e93] text-xs mb-1.5">
-              <span>Net Outstanding Balance</span>
-              <DollarSign className="w-4 h-4 text-[#ff9f0a]" />
+          <div className="bg-[#111c38] p-5 rounded-2xl border border-slate-800/80 shadow-xl">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Net Outstanding
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+                <DollarSign className="w-4 h-4" />
+              </div>
             </div>
-            <div className="text-xl font-bold font-mono text-[#ff9f0a]">
+            <div className="text-2xl font-black font-sans text-amber-400 tracking-tight">
               ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
             </div>
-            <span className="text-[11px] text-[#8e8e93] mt-1 block">
+            <span className="text-xs text-slate-400 mt-2 block">
               Unsettled Billing MTD
             </span>
           </div>
         </div>
       )}
 
-      {/* DEDICATED DIVISION COLLECTIONS BOXED VIEW (PVD vs LASER) */}
+      {/* DEDICATED DIVISION COLLECTIONS COMPARISON PANELS (PVD vs LASER) */}
       {showDivisionBoxes && (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                <Boxes className="w-4 h-4 text-[#30d158]" /> Division Collections Breakdown
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                <Boxes className="w-4 h-4 text-emerald-400" />
+                <span>Division Collections Breakdown</span>
               </span>
-              <span className="text-[10px] text-[#8e8e93] font-medium bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-                Click a division box to view related data
+              <span className="text-[11px] text-slate-400 bg-slate-800/80 border border-slate-700/80 px-2.5 py-0.5 rounded-full font-medium">
+                Select a division to filter related data
               </span>
             </div>
             {selectedDivision !== 'ALL' && (
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-xs text-[#0a84ff] hover:underline font-semibold flex items-center gap-1"
+                className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition-colors"
               >
-                <RotateCcw className="w-3 h-3" />
+                <RotateCcw className="w-3.5 h-3.5" />
                 <span>Show All Companies</span>
               </button>
             )}
@@ -467,24 +504,24 @@ export default function MasterConsolidatedView({
             {/* Box A: PVD Coating Division Collections */}
             <div
               onClick={() => handleSelectDivision(selectedDivision === 'PVD' ? 'ALL' : 'PVD')}
-              className={`p-5 rounded-2xl backdrop-blur-2xl border transition-all cursor-pointer relative overflow-hidden group select-none shadow-xl ${
+              className={`p-6 rounded-2xl border transition-all cursor-pointer relative shadow-xl select-none ${
                 selectedDivision === 'PVD'
-                  ? 'bg-[#bf5af2]/15 border-[#bf5af2] ring-2 ring-[#bf5af2]/50'
-                  : 'bg-[#1c1c1e]/85 border-white/10 hover:border-[#bf5af2]/60 hover:bg-[#bf5af2]/5'
+                  ? 'bg-[#151c3d] border-purple-500 ring-2 ring-purple-500/40 shadow-purple-500/10'
+                  : 'bg-[#111c38] border-slate-800 hover:border-purple-500/60 hover:bg-[#131f42]'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#bf5af2]" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-purple-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
                       PVD Coating Division Collections
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#bf5af2]/20 text-[#bf5af2] font-bold border border-[#bf5af2]/30">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                       {pvdTotals.totalCount} Plants
                     </span>
                   </div>
-                  <div className="text-2xl font-bold font-mono text-white mt-2 tracking-tight">
+                  <div className="text-3xl font-black font-sans text-white mt-2.5 tracking-tight">
                     ₹
                     {(isMonthly ? pvdTotals.monthPayment : pvdTotals.todayPayment).toLocaleString(
                       'en-IN'
@@ -492,32 +529,32 @@ export default function MasterConsolidatedView({
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-semibold text-[#8e8e93] block">
+                <div className="text-right bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                     Recovery Rate
                   </span>
-                  <span className="text-sm font-mono font-extrabold text-[#30d158]">
+                  <span className="text-sm font-extrabold font-sans text-emerald-400">
                     {isMonthly ? pvdTotals.monthRecoveryRate : pvdTotals.recoveryRate}%
                   </span>
                 </div>
               </div>
 
               {/* Sub-breakdown: GST vs Others */}
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-3.5 border-t border-white/10">
-                <div className="bg-white/5 rounded-xl p-2.5 border border-white/5">
-                  <span className="text-[10px] text-[#8e8e93] block uppercase tracking-wide">
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
+                <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
                     GST Collection
                   </span>
-                  <span className="text-xs font-bold font-mono text-[#0a84ff] mt-0.5 block">
+                  <span className="text-base font-bold font-sans text-blue-400 mt-1 block">
                     ₹
                     {(isMonthly ? pvdTotals.monthGst : pvdTotals.todayGst).toLocaleString('en-IN')}
                   </span>
                 </div>
-                <div className="bg-white/5 rounded-xl p-2.5 border border-white/5">
-                  <span className="text-[10px] text-[#8e8e93] block uppercase tracking-wide">
+                <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
                     Others Collection
                   </span>
-                  <span className="text-xs font-bold font-mono text-[#bf5af2] mt-0.5 block">
+                  <span className="text-base font-bold font-sans text-purple-400 mt-1 block">
                     ₹
                     {(isMonthly ? pvdTotals.monthOther : pvdTotals.todayOther).toLocaleString(
                       'en-IN'
@@ -527,15 +564,15 @@ export default function MasterConsolidatedView({
               </div>
 
               {/* Action Banner */}
-              <div className="mt-3.5 flex items-center justify-between text-[11px] font-semibold text-[#bf5af2]">
+              <div className="mt-4 flex items-center justify-between text-xs font-semibold text-purple-400">
                 <span>
                   {selectedDivision === 'PVD'
-                    ? 'Related PVD data currently active'
-                    : 'Click to view related PVD plant data'}
+                    ? 'PVD related data active below (Click to reset)'
+                    : 'Click to filter related PVD plant records'}
                 </span>
                 <ChevronRight
                   className={`w-4 h-4 transition-transform ${
-                    selectedDivision === 'PVD' ? 'rotate-90' : 'group-hover:translate-x-1'
+                    selectedDivision === 'PVD' ? 'rotate-90' : ''
                   }`}
                 />
               </div>
@@ -544,24 +581,24 @@ export default function MasterConsolidatedView({
             {/* Box B: Laser Division Collections */}
             <div
               onClick={() => handleSelectDivision(selectedDivision === 'LASER' ? 'ALL' : 'LASER')}
-              className={`p-5 rounded-2xl backdrop-blur-2xl border transition-all cursor-pointer relative overflow-hidden group select-none shadow-xl ${
+              className={`p-6 rounded-2xl border transition-all cursor-pointer relative shadow-xl select-none ${
                 selectedDivision === 'LASER'
-                  ? 'bg-[#0a84ff]/15 border-[#0a84ff] ring-2 ring-[#0a84ff]/50'
-                  : 'bg-[#1c1c1e]/85 border-white/10 hover:border-[#0a84ff]/60 hover:bg-[#0a84ff]/5'
+                  ? 'bg-[#151c3d] border-blue-500 ring-2 ring-blue-500/40 shadow-blue-500/10'
+                  : 'bg-[#111c38] border-slate-800 hover:border-blue-500/60 hover:bg-[#131f42]'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#0a84ff]" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
                       Laser Division Collections
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#0a84ff]/20 text-[#0a84ff] font-bold border border-[#0a84ff]/30">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                       {laserTotals.totalCount} Plants
                     </span>
                   </div>
-                  <div className="text-2xl font-bold font-mono text-white mt-2 tracking-tight">
+                  <div className="text-3xl font-black font-sans text-white mt-2.5 tracking-tight">
                     ₹
                     {(isMonthly ? laserTotals.monthPayment : laserTotals.todayPayment).toLocaleString(
                       'en-IN'
@@ -569,34 +606,34 @@ export default function MasterConsolidatedView({
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-semibold text-[#8e8e93] block">
+                <div className="text-right bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                     Recovery Rate
                   </span>
-                  <span className="text-sm font-mono font-extrabold text-[#30d158]">
+                  <span className="text-sm font-extrabold font-sans text-emerald-400">
                     {isMonthly ? laserTotals.monthRecoveryRate : laserTotals.recoveryRate}%
                   </span>
                 </div>
               </div>
 
               {/* Sub-breakdown: GST vs Others */}
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-3.5 border-t border-white/10">
-                <div className="bg-white/5 rounded-xl p-2.5 border border-white/5">
-                  <span className="text-[10px] text-[#8e8e93] block uppercase tracking-wide">
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-800">
+                <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
                     GST Collection
                   </span>
-                  <span className="text-xs font-bold font-mono text-[#0a84ff] mt-0.5 block">
+                  <span className="text-base font-bold font-sans text-blue-400 mt-1 block">
                     ₹
                     {(isMonthly ? laserTotals.monthGst : laserTotals.todayGst).toLocaleString(
                       'en-IN'
                     )}
                   </span>
                 </div>
-                <div className="bg-white/5 rounded-xl p-2.5 border border-white/5">
-                  <span className="text-[10px] text-[#8e8e93] block uppercase tracking-wide">
+                <div className="bg-[#0b1329] rounded-xl p-3 border border-slate-800/80">
+                  <span className="text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
                     Others Collection
                   </span>
-                  <span className="text-xs font-bold font-mono text-[#bf5af2] mt-0.5 block">
+                  <span className="text-base font-bold font-sans text-purple-400 mt-1 block">
                     ₹
                     {(isMonthly ? laserTotals.monthOther : laserTotals.todayOther).toLocaleString(
                       'en-IN'
@@ -606,15 +643,15 @@ export default function MasterConsolidatedView({
               </div>
 
               {/* Action Banner */}
-              <div className="mt-3.5 flex items-center justify-between text-[11px] font-semibold text-[#0a84ff]">
+              <div className="mt-4 flex items-center justify-between text-xs font-semibold text-blue-400">
                 <span>
                   {selectedDivision === 'LASER'
-                    ? 'Related Laser data currently active'
-                    : 'Click to view related Laser plant data'}
+                    ? 'Laser related data active below (Click to reset)'
+                    : 'Click to filter related Laser plant records'}
                 </span>
                 <ChevronRight
                   className={`w-4 h-4 transition-transform ${
-                    selectedDivision === 'LASER' ? 'rotate-90' : 'group-hover:translate-x-1'
+                    selectedDivision === 'LASER' ? 'rotate-90' : ''
                   }`}
                 />
               </div>
@@ -625,26 +662,26 @@ export default function MasterConsolidatedView({
 
       {/* Main Container: Left Sidebar + Right Master Table */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Side: Companies Quick Switcher & Division Filter Pills */}
-        <div className="bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 p-4 shadow-xl space-y-2.5">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10 px-2">
+        {/* Left Side: Companies Switcher & Division Tabs */}
+        <div className="bg-[#0d1527] rounded-2xl border border-slate-800/90 p-4 shadow-xl space-y-3">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 px-2">
             <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-[#0a84ff]" /> Group Companies
+              <Building2 className="w-4 h-4 text-blue-400" /> Group Companies
             </span>
-            <span className="text-[11px] text-[#8e8e93] font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
+            <span className="text-[11px] text-slate-400 font-semibold px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800">
               Group Units
             </span>
           </div>
 
           {/* Division Filter Segmented Tabs */}
-          <div className="grid grid-cols-3 gap-1 bg-white/5 p-1 rounded-xl border border-white/10 text-[11px] font-semibold">
+          <div className="grid grid-cols-3 gap-1 bg-[#0b1329] p-1 rounded-xl border border-slate-800 text-[11px] font-semibold">
             <button
               type="button"
               onClick={() => handleSelectDivision('ALL')}
-              className={`py-1 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all ${
                 selectedDivision === 'ALL'
-                  ? 'bg-white/15 text-white font-bold'
-                  : 'text-[#8e8e93] hover:text-white'
+                  ? 'bg-slate-800 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               All
@@ -652,10 +689,10 @@ export default function MasterConsolidatedView({
             <button
               type="button"
               onClick={() => handleSelectDivision('LASER')}
-              className={`py-1 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all ${
                 selectedDivision === 'LASER'
-                  ? 'bg-[#0a84ff] text-white font-bold shadow-md shadow-[#0a84ff]/30'
-                  : 'text-[#8e8e93] hover:text-[#0a84ff]'
+                  ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30'
+                  : 'text-slate-400 hover:text-blue-400'
               }`}
             >
               Laser (6)
@@ -663,10 +700,10 @@ export default function MasterConsolidatedView({
             <button
               type="button"
               onClick={() => handleSelectDivision('PVD')}
-              className={`py-1 rounded-lg transition-all ${
+              className={`py-1.5 rounded-lg transition-all ${
                 selectedDivision === 'PVD'
-                  ? 'bg-[#bf5af2] text-white font-bold shadow-md shadow-[#bf5af2]/30'
-                  : 'text-[#8e8e93] hover:text-[#bf5af2]'
+                  ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/30'
+                  : 'text-slate-400 hover:text-purple-400'
               }`}
             >
               PVD (3)
@@ -677,13 +714,13 @@ export default function MasterConsolidatedView({
           <button
             type="button"
             onClick={() => setShowAccountsModal(true)}
-            className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold flex items-center justify-between transition-all text-left"
+            className="w-full py-2.5 px-3 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-white text-xs font-semibold flex items-center justify-between transition-all text-left"
           >
             <span className="flex items-center gap-2">
-              <Key className="w-3.5 h-3.5 text-[#0a84ff]" />
+              <Key className="w-3.5 h-3.5 text-blue-400" />
               <span>Company Passwords</span>
             </span>
-            <span className="text-[10px] bg-[#0a84ff]/20 text-[#0a84ff] px-1.5 py-0.5 rounded font-mono font-bold">
+            <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded font-sans font-bold">
               Manage
             </span>
           </button>
@@ -692,10 +729,10 @@ export default function MasterConsolidatedView({
           <button
             type="button"
             onClick={handleResetFilters}
-            className={`w-full text-left px-3.5 py-2.5 rounded-2xl transition-all flex items-center justify-between text-xs font-semibold ${
+            className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs font-semibold ${
               selectedCompanyFilter === null && selectedDivision === 'ALL'
-                ? 'bg-[#0a84ff] text-white shadow-md shadow-[#0a84ff]/25'
-                : 'text-[#8e8e93] hover:text-white hover:bg-white/5'
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
             <span>All Companies (Consolidated)</span>
@@ -703,7 +740,7 @@ export default function MasterConsolidatedView({
           </button>
 
           {/* List of Companies (Dynamic based on selectedDivision) */}
-          <div className="space-y-1 pt-1 max-h-[380px] overflow-y-auto pr-1">
+          <div className="space-y-1.5 pt-1 max-h-[380px] overflow-y-auto pr-1">
             {(selectedDivision === 'ALL'
               ? summaries
               : selectedDivision === 'PVD'
@@ -717,31 +754,31 @@ export default function MasterConsolidatedView({
                   key={s.company.id}
                   type="button"
                   onClick={() => setSelectedCompanyFilter(isSelected ? null : s.company.id)}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between text-xs ${
+                  className={`w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-center justify-between text-xs ${
                     isSelected
-                      ? 'bg-white/15 text-white font-bold border border-white/20'
-                      : 'text-[#8e8e93] hover:text-white hover:bg-white/5'
+                      ? 'bg-slate-800 text-white font-bold border border-slate-700'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-900/70'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
-                        s.hasEntryToday ? 'bg-[#30d158]' : 'bg-[#ff9f0a]'
+                        s.hasEntryToday ? 'bg-emerald-400' : 'bg-amber-400'
                       }`}
                     />
-                    <span className="truncate">{s.company.name}</span>
+                    <span className="truncate font-sans">{s.company.name}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 ml-1">
                     <span
-                      className={`text-[9px] px-1 rounded font-mono ${
+                      className={`text-[9px] px-1.5 py-0.2 rounded font-sans font-bold ${
                         isPvd
-                          ? 'bg-[#bf5af2]/15 text-[#bf5af2]'
-                          : 'bg-[#0a84ff]/15 text-[#0a84ff]'
+                          ? 'bg-purple-500/15 text-purple-400'
+                          : 'bg-blue-500/15 text-blue-400'
                       }`}
                     >
                       {isPvd ? 'PVD' : 'LASER'}
                     </span>
-                    <span className="text-[10px] font-mono text-[#8e8e93]">
+                    <span className="text-xs font-bold font-sans text-slate-400">
                       ₹{Math.round((isMonthly ? s.monthBilling : s.todayBilling) / 1000)}k
                     </span>
                   </div>
@@ -750,20 +787,20 @@ export default function MasterConsolidatedView({
             })}
           </div>
 
-          <div className="pt-3 border-t border-white/10 px-2 flex items-center justify-between text-[10px] text-[#8e8e93]">
+          <div className="pt-3 border-t border-slate-800 px-2 flex items-center justify-between text-[11px] text-slate-400 font-medium">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#30d158]" /> Updated
+              <span className="w-2 h-2 rounded-full bg-emerald-400" /> Updated
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#ff9f0a]" /> Pending
+              <span className="w-2 h-2 rounded-full bg-amber-400" /> Pending
             </span>
           </div>
         </div>
 
         {/* Right Side: The Master Consolidated Table & Related Data View */}
-        <div className="lg:col-span-3 bg-[#1c1c1e]/80 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
-          {/* Card Header with DATE FILTER in the right corner */}
-          <div className="p-4 sm:p-5 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/[0.02]">
+        <div className="lg:col-span-3 bg-[#0d1527] rounded-2xl border border-slate-800/90 overflow-hidden shadow-2xl">
+          {/* Card Header with DATE FILTER */}
+          <div className="p-4 sm:p-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0b1329]/50">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-base font-bold text-white tracking-tight">
@@ -778,10 +815,10 @@ export default function MasterConsolidatedView({
                 <span
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                     selectedDivision === 'PVD'
-                      ? 'bg-[#bf5af2]/20 text-[#bf5af2] border-[#bf5af2]/30'
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
                       : selectedDivision === 'LASER'
-                      ? 'bg-[#0a84ff]/20 text-[#0a84ff] border-[#0a84ff]/30'
-                      : 'bg-white/10 text-white/80 border-white/10'
+                      ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                      : 'bg-slate-800 text-slate-300 border-slate-700'
                   }`}
                 >
                   {selectedDivision === 'PVD'
@@ -793,7 +830,7 @@ export default function MasterConsolidatedView({
                     : 'Daily Matrix'}
                 </span>
               </div>
-              <p className="text-xs text-[#8e8e93] mt-0.5">
+              <p className="text-xs text-slate-400 mt-1">
                 {selectedDivision !== 'ALL'
                   ? `Showing ${filteredSummaries.length} plants in ${selectedDivision} Division • Date: ${selectedDate}`
                   : isMonthly
@@ -802,26 +839,26 @@ export default function MasterConsolidatedView({
               </p>
             </div>
 
-            {/* Right Corner Controls: DATE FILTER PILL + Reset Filter */}
+            {/* Right Corner Controls: DATE FILTER + Reset Filter */}
             <div className="flex items-center gap-2.5 flex-wrap self-start md:self-auto">
               {(selectedCompanyFilter || selectedDivision !== 'ALL') && (
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="text-xs text-[#0a84ff] hover:underline flex items-center gap-1 font-medium pr-2"
+                  className="text-xs text-blue-400 hover:underline font-semibold flex items-center gap-1 pr-2"
                 >
                   <span>Show All Companies</span>
                 </button>
               )}
 
               {/* Date Filter Pill */}
-              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/15 px-3.5 py-1.5 rounded-full text-xs text-white font-medium border border-white/15 transition-all shadow-inner">
-                <Calendar className="w-3.5 h-3.5 text-[#0a84ff] shrink-0" />
+              <div className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 px-3.5 py-1.5 rounded-full text-xs text-white font-medium border border-slate-700 transition-all shadow-inner">
+                <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="bg-transparent border-none text-white focus:outline-none cursor-pointer font-mono text-xs"
+                  className="bg-transparent border-none text-white focus:outline-none cursor-pointer font-sans text-xs"
                   title="Filter register by date"
                 />
               </div>
@@ -831,10 +868,10 @@ export default function MasterConsolidatedView({
           {/* Active Filter Notification Pill */}
           {selectedDivision !== 'ALL' && (
             <div
-              className={`px-4 py-2 border-b flex items-center justify-between text-xs font-medium ${
+              className={`px-4 py-2.5 border-b flex items-center justify-between text-xs font-semibold ${
                 selectedDivision === 'PVD'
-                  ? 'bg-[#bf5af2]/10 border-[#bf5af2]/20 text-[#bf5af2]'
-                  : 'bg-[#0a84ff]/10 border-[#0a84ff]/20 text-[#0a84ff]'
+                  ? 'bg-purple-950/30 border-purple-900/50 text-purple-300'
+                  : 'bg-blue-950/30 border-blue-900/50 text-blue-300'
               }`}
             >
               <span>
@@ -852,7 +889,7 @@ export default function MasterConsolidatedView({
               <button
                 type="button"
                 onClick={() => setSelectedDivision('ALL')}
-                className="underline hover:text-white text-[11px]"
+                className="underline hover:text-white text-[11px] font-bold"
               >
                 Clear Division Filter
               </button>
@@ -862,15 +899,15 @@ export default function MasterConsolidatedView({
           {/* TABLE DISPLAY */}
           <div className="overflow-x-auto">
             {!isMonthly ? (
-              // DAILY MATRIX TABLE (With GST Collection & Others Columns)
+              // DAILY MATRIX TABLE
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] font-semibold uppercase tracking-wider text-[11px]">
+                  <tr className="border-b border-slate-800 bg-[#0b1329] text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
                     <th className="py-3 px-3 text-right">Today Billing</th>
-                    <th className="py-3 px-3 text-right text-[#0a84ff]">GST Collection</th>
-                    <th className="py-3 px-3 text-right text-[#bf5af2]">Others</th>
-                    <th className="py-3 px-3 text-right text-[#30d158]">Today Payment</th>
+                    <th className="py-3 px-3 text-right text-blue-400">GST Collection</th>
+                    <th className="py-3 px-3 text-right text-purple-400">Others</th>
+                    <th className="py-3 px-3 text-right text-emerald-400">Today Payment</th>
                     <th className="py-3 px-3 text-center">Payment Received Date & Time</th>
                     <th className="py-3 px-3 text-right">Total Bill (MTD)</th>
                     <th className="py-3 px-3 text-right">Total Payment (TP)</th>
@@ -879,90 +916,90 @@ export default function MasterConsolidatedView({
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-800/60">
                   {filteredSummaries.map((item) => {
                     const isPvd = isPvdCompany(item.company);
                     return (
                       <tr
                         key={item.company.id}
-                        className="hover:bg-white/[0.04] transition-colors group"
+                        className="hover:bg-slate-800/40 transition-colors group"
                       >
-                        <td className="py-3.5 px-3.5 font-semibold text-white">
+                        <td className="py-3.5 px-3.5 font-bold text-white">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-mono font-bold ${
-                                isPvd ? 'text-[#bf5af2]' : 'text-[#0a84ff]'
+                              className={`w-7 h-7 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center text-[10px] font-sans font-black ${
+                                isPvd ? 'text-purple-400' : 'text-blue-400'
                               }`}
                             >
                               {item.company.code}
                             </span>
                             <div>
-                              <div className="text-white font-bold leading-tight flex items-center gap-1.5">
+                              <div className="text-white font-bold leading-tight flex items-center gap-1.5 font-sans">
                                 <span>{item.company.name}</span>
                                 <span
-                                  className={`text-[9px] px-1 rounded font-mono ${
+                                  className={`text-[9px] px-1.5 py-0.2 rounded font-sans font-bold ${
                                     isPvd
-                                      ? 'bg-[#bf5af2]/15 text-[#bf5af2]'
-                                      : 'bg-[#0a84ff]/15 text-[#0a84ff]'
+                                      ? 'bg-purple-500/15 text-purple-400'
+                                      : 'bg-blue-500/15 text-blue-400'
                                   }`}
                                 >
                                   {isPvd ? 'PVD' : 'LASER'}
                                 </span>
                               </div>
-                              <div className="text-[10px] text-[#8e8e93]">
+                              <div className="text-[11px] text-slate-400">
                                 {item.company.location}
                               </div>
                             </div>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-white">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-slate-100">
                           ₹{item.todayBilling.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#0a84ff]">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-blue-400">
                           ₹{(item.todayGstPayment || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#bf5af2]">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
                           ₹{(item.todayOtherPayment || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-bold text-[#30d158]">
+                        <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
                           ₹{item.todayPayment.toLocaleString('en-IN')}
                         </td>
 
                         {/* Payment Received Date & Time Column */}
-                        <td className="py-3.5 px-3 text-center font-mono text-[11px]">
+                        <td className="py-3.5 px-3 text-center text-xs">
                           {item.todayPayment > 0 ? (
                             <div className="inline-flex flex-col items-center">
-                              <span className="text-white font-semibold">
+                              <span className="text-slate-200 font-bold font-sans">
                                 {item.paymentReceivedAt ||
                                   `${selectedDate.split('-').reverse().join('-')}, 04:00 PM`}
                               </span>
                               {item.paymentMode && (
-                                <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-white/10 text-[#8e8e93] font-sans">
+                                <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-sans font-semibold">
                                   {item.paymentMode.replace('_', ' ')}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-[#8e8e93]/60 italic font-sans text-[11px]">-</span>
+                            <span className="text-slate-500 italic font-sans text-xs">-</span>
                           )}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono text-white/90">
+                        <td className="py-3.5 px-3 text-right font-semibold font-sans text-slate-200">
                           ₹{item.monthBilling.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#30d158]">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-emerald-400">
                           ₹{item.monthPayment.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-medium">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans">
                           <span
                             className={
-                              item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'
+                              item.netDifference >= 0 ? 'text-amber-400' : 'text-emerald-400'
                             }
                           >
                             ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
@@ -971,11 +1008,11 @@ export default function MasterConsolidatedView({
 
                         <td className="py-3.5 px-3 text-center">
                           {item.hasEntryToday ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                               <CheckCircle2 className="w-3 h-3" /> Submitted
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ff9f0a]/15 text-[#ff9f0a] border border-[#ff9f0a]/30">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
                               <Clock className="w-3 h-3" /> Pending
                             </span>
                           )}
@@ -985,9 +1022,9 @@ export default function MasterConsolidatedView({
                           <button
                             type="button"
                             onClick={() => onEditCompany(item.company.id)}
-                            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-medium border border-white/10 transition-colors inline-flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1"
                           >
-                            <Edit2 className="w-3 h-3 text-[#0a84ff]" />
+                            <Edit2 className="w-3 h-3 text-blue-400" />
                             <span>Edit</span>
                           </button>
                         </td>
@@ -997,54 +1034,54 @@ export default function MasterConsolidatedView({
                 </tbody>
 
                 <tfoot>
-                  <tr className="bg-[#0a84ff]/15 border-t-2 border-[#0a84ff]/40 text-white font-bold text-xs">
-                    <td className="py-4 px-3.5 uppercase tracking-wider font-extrabold flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#0a84ff] animate-ping" />
+                  <tr className="bg-[#0b1329] border-t-2 border-blue-500/50 text-white font-bold text-xs">
+                    <td className="py-4 px-3.5 uppercase tracking-wider font-black flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
                       {displayFooterTotal.label}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
                       ₹{displayFooterTotal.todayBilling.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#0a84ff]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
                       ₹{displayFooterTotal.todayGstPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#bf5af2]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-purple-400">
                       ₹{displayFooterTotal.todayOtherPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
                       ₹{displayFooterTotal.todayPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-center text-[11px] font-mono text-white/80">
+                    <td className="py-4 px-3 text-center text-xs text-slate-300">
                       Live Timestamped
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
                       ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
                       ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#ff9f0a]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-amber-400">
                       ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-center text-[11px] font-mono text-white/80">
+                    <td className="py-4 px-3 text-center text-xs text-slate-300">
                       {displayFooterTotal.statusText}
                     </td>
                     <td className="py-4 px-3 text-center">
-                      <span className="text-[10px] text-white/70 font-mono">Verified</span>
+                      <span className="text-xs font-bold text-slate-400">Verified</span>
                     </td>
                   </tr>
                 </tfoot>
               </table>
             ) : (
-              // MONTHLY CUMULATIVE TABLE (With GST & Others Columns)
+              // MONTHLY CUMULATIVE TABLE
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 bg-white/5 text-[#8e8e93] font-semibold uppercase tracking-wider text-[11px]">
+                  <tr className="border-b border-slate-800 bg-[#0b1329] text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                     <th className="py-3 px-3.5">Company Name</th>
                     <th className="py-3 px-3 text-right">Month Billing (MTD)</th>
-                    <th className="py-3 px-3 text-right text-[#0a84ff]">GST Collection (MTD)</th>
-                    <th className="py-3 px-3 text-right text-[#bf5af2]">Others (MTD)</th>
-                    <th className="py-3 px-3 text-right text-[#30d158]">Month Payment (TP)</th>
+                    <th className="py-3 px-3 text-right text-blue-400">GST Collection (MTD)</th>
+                    <th className="py-3 px-3 text-right text-purple-400">Others (MTD)</th>
+                    <th className="py-3 px-3 text-right text-emerald-400">Month Payment (TP)</th>
                     <th className="py-3 px-3 text-right">Net Balance</th>
                     <th className="py-3 px-3 text-center">Collection %</th>
                     <th className="py-3 px-3 text-right">Avg Daily Billing</th>
@@ -1053,63 +1090,63 @@ export default function MasterConsolidatedView({
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-800/60">
                   {filteredSummaries.map((item) => {
                     const isPvd = isPvdCompany(item.company);
                     return (
                       <tr
                         key={item.company.id}
-                        className="hover:bg-white/[0.04] transition-colors group"
+                        className="hover:bg-slate-800/40 transition-colors group"
                       >
-                        <td className="py-3.5 px-3.5 font-semibold text-white">
+                        <td className="py-3.5 px-3.5 font-bold text-white">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-mono font-bold ${
-                                isPvd ? 'text-[#bf5af2]' : 'text-[#0a84ff]'
+                              className={`w-7 h-7 rounded-lg bg-slate-900 border border-slate-700/80 flex items-center justify-center text-[10px] font-sans font-black ${
+                                isPvd ? 'text-purple-400' : 'text-blue-400'
                               }`}
                             >
                               {item.company.code}
                             </span>
                             <div>
-                              <div className="text-white font-bold leading-tight flex items-center gap-1.5">
+                              <div className="text-white font-bold leading-tight flex items-center gap-1.5 font-sans">
                                 <span>{item.company.name}</span>
                                 <span
-                                  className={`text-[9px] px-1 rounded font-mono ${
+                                  className={`text-[9px] px-1.5 py-0.2 rounded font-sans font-bold ${
                                     isPvd
-                                      ? 'bg-[#bf5af2]/15 text-[#bf5af2]'
-                                      : 'bg-[#0a84ff]/15 text-[#0a84ff]'
+                                      ? 'bg-purple-500/15 text-purple-400'
+                                      : 'bg-blue-500/15 text-blue-400'
                                   }`}
                                 >
                                   {isPvd ? 'PVD' : 'LASER'}
                                 </span>
                               </div>
-                              <div className="text-[10px] text-[#8e8e93]">
+                              <div className="text-[11px] text-slate-400">
                                 {item.company.location}
                               </div>
                             </div>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-bold text-white">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-white">
                           ₹{item.monthBilling.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#0a84ff]">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-blue-400">
                           ₹{(item.monthGstPayment || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold text-[#bf5af2]">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans text-purple-400">
                           ₹{(item.monthOtherPayment || 0).toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-bold text-[#30d158]">
+                        <td className="py-3.5 px-3 text-right font-black font-sans text-emerald-400">
                           ₹{item.monthPayment.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono font-semibold">
+                        <td className="py-3.5 px-3 text-right font-bold font-sans">
                           <span
                             className={
-                              item.netDifference >= 0 ? 'text-[#ff9f0a]' : 'text-[#30d158]'
+                              item.netDifference >= 0 ? 'text-amber-400' : 'text-emerald-400'
                             }
                           >
                             ₹{Math.abs(item.netDifference).toLocaleString('en-IN')}
@@ -1118,29 +1155,29 @@ export default function MasterConsolidatedView({
 
                         <td className="py-3.5 px-3 text-center">
                           <div className="inline-flex flex-col items-center gap-1">
-                            <span className="text-xs font-mono font-bold text-[#30d158]">
+                            <span className="text-xs font-bold font-sans text-emerald-400">
                               {item.collectionRate}%
                             </span>
-                            <div className="w-16 bg-white/10 h-1.5 rounded-full overflow-hidden">
+                            <div className="w-16 bg-slate-800 h-1.5 rounded-full overflow-hidden">
                               <div
-                                className="bg-[#30d158] h-full rounded-full"
+                                className="bg-emerald-400 h-full rounded-full"
                                 style={{ width: `${Math.min(100, item.collectionRate)}%` }}
                               />
                             </div>
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-3 text-right font-mono text-white/90">
+                        <td className="py-3.5 px-3 text-right font-semibold font-sans text-slate-200">
                           ₹{item.avgDailyBilling.toLocaleString('en-IN')}
                         </td>
 
-                        <td className="py-3.5 px-3 text-center font-mono text-[11px] text-white/90">
+                        <td className="py-3.5 px-3 text-center text-xs text-slate-300 font-sans">
                           {item.paymentReceivedAt ||
                             `${selectedDate.split('-').reverse().join('-')}, 04:00 PM`}
                         </td>
 
                         <td className="py-3.5 px-3 text-center">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                             <CheckCircle2 className="w-3 h-3" /> Reconciled
                           </span>
                         </td>
@@ -1149,9 +1186,9 @@ export default function MasterConsolidatedView({
                           <button
                             type="button"
                             onClick={() => onEditCompany(item.company.id)}
-                            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-medium border border-white/10 transition-colors inline-flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1"
                           >
-                            <Edit2 className="w-3 h-3 text-[#0a84ff]" />
+                            <Edit2 className="w-3 h-3 text-blue-400" />
                             <span>Edit</span>
                           </button>
                         </td>
@@ -1161,40 +1198,40 @@ export default function MasterConsolidatedView({
                 </tbody>
 
                 <tfoot>
-                  <tr className="bg-[#bf5af2]/15 border-t-2 border-[#bf5af2]/40 text-white font-bold text-xs">
-                    <td className="py-4 px-3.5 uppercase tracking-wider font-extrabold flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#bf5af2] animate-ping" />
+                  <tr className="bg-[#0b1329] border-t-2 border-purple-500/50 text-white font-bold text-xs">
+                    <td className="py-4 px-3.5 uppercase tracking-wider font-black flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-ping" />
                       {displayFooterTotal.label}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-white">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-white">
                       ₹{displayFooterTotal.monthBilling.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#0a84ff]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-blue-400">
                       ₹{displayFooterTotal.monthGstPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#bf5af2]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-purple-400">
                       ₹{displayFooterTotal.monthOtherPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#30d158]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-emerald-400">
                       ₹{displayFooterTotal.monthPayment.toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-sm font-extrabold text-[#ff9f0a]">
+                    <td className="py-4 px-3 text-right font-sans text-sm font-black text-amber-400">
                       ₹{Math.abs(displayFooterTotal.netDifference).toLocaleString('en-IN')}
                     </td>
-                    <td className="py-4 px-3 text-center font-mono text-xs font-extrabold text-[#30d158]">
+                    <td className="py-4 px-3 text-center font-sans text-xs font-black text-emerald-400">
                       {displayFooterTotal.collectionRate}%
                     </td>
-                    <td className="py-4 px-3 text-right font-mono text-xs text-white/80">
+                    <td className="py-4 px-3 text-right font-sans text-xs text-slate-300">
                       ₹{displayFooterTotal.avgDailyBilling.toLocaleString('en-IN')} /day
                     </td>
-                    <td className="py-4 px-3 text-center font-mono text-[11px] text-white/80">
+                    <td className="py-4 px-3 text-center text-xs text-slate-300 font-sans">
                       All Recorded
                     </td>
-                    <td className="py-4 px-3 text-center text-[11px] font-mono text-[#30d158]">
+                    <td className="py-4 px-3 text-center text-xs font-bold text-emerald-400">
                       100% Closed
                     </td>
                     <td className="py-4 px-3 text-center">
-                      <span className="text-[10px] text-white/70 font-mono">Audited</span>
+                      <span className="text-xs font-bold text-slate-400">Audited</span>
                     </td>
                   </tr>
                 </tfoot>
@@ -1207,20 +1244,20 @@ export default function MasterConsolidatedView({
       {/* Super Admin Modal: Company Accounts & Passwords Directory */}
       {showAccountsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-3xl bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-2xl backdrop-blur-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+          <div className="relative w-full max-w-3xl bg-[#0d1527] border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#0a84ff]/20 text-[#0a84ff] flex items-center justify-center border border-[#0a84ff]/30">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
                   <Key className="w-5 h-5" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
                     Company Accounts & Credentials
-                    <span className="text-[10px] font-bold text-[#30d158] bg-[#30d158]/15 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
                       Super Admin Private
                     </span>
                   </h2>
-                  <p className="text-xs text-[#8e8e93]">
+                  <p className="text-xs text-slate-400">
                     Share these credentials with operating unit branch managers to log into their
                     respective portals.
                   </p>
@@ -1229,16 +1266,16 @@ export default function MasterConsolidatedView({
               <button
                 onClick={() => setShowAccountsModal(false)}
                 type="button"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-[#8e8e93] hover:text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-white/10">
+            <div className="overflow-x-auto rounded-2xl border border-slate-800">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-white/5 border-b border-white/10 text-[#8e8e93] uppercase tracking-wider text-[11px]">
+                  <tr className="bg-[#0b1329] border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[11px] font-bold">
                     <th className="py-3 px-4">Company Name</th>
                     <th className="py-3 px-3">Username</th>
                     <th className="py-3 px-3">Email Address</th>
@@ -1246,7 +1283,7 @@ export default function MasterConsolidatedView({
                     <th className="py-3 px-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-800">
                   {companyAccounts.map((acc) => {
                     const isCopied = copiedId === acc.id;
                     const credText =
@@ -1259,32 +1296,28 @@ export default function MasterConsolidatedView({
                       '\nPassword: ' +
                       acc.pass;
                     return (
-                      <tr key={acc.id} className="hover:bg-white/[0.03] transition-colors">
+                      <tr key={acc.id} className="hover:bg-slate-800/40 transition-colors">
                         <td className="py-3 px-4">
                           <span className="font-bold text-white block">{acc.name}</span>
-                          <span className="text-[10px] text-[#8e8e93]">{acc.id}</span>
+                          <span className="text-[10px] text-slate-400">{acc.id}</span>
                         </td>
-                        <td className="py-3 px-3 font-mono text-white font-semibold">
-                          {acc.username}
-                        </td>
-                        <td className="py-3 px-3 font-mono text-[#8e8e93] text-[11px]">
-                          {acc.email}
-                        </td>
-                        <td className="py-3 px-3 font-mono font-bold text-[#30d158]">{acc.pass}</td>
+                        <td className="py-3 px-3 font-semibold text-slate-200">{acc.username}</td>
+                        <td className="py-3 px-3 text-slate-400 text-xs">{acc.email}</td>
+                        <td className="py-3 px-3 font-bold text-emerald-400">{acc.pass}</td>
                         <td className="py-3 px-3 text-center">
                           <button
                             type="button"
                             onClick={() => handleCopy(acc.id, credText)}
-                            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-medium border border-white/10 transition-colors inline-flex items-center gap-1.5"
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition-colors inline-flex items-center gap-1.5"
                           >
                             {isCopied ? (
                               <>
-                                <Check className="w-3 h-3 text-[#30d158]" />
-                                <span className="text-[#30d158]">Copied</span>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span className="text-emerald-400">Copied</span>
                               </>
                             ) : (
                               <>
-                                <Copy className="w-3 h-3 text-[#0a84ff]" />
+                                <Copy className="w-3 h-3 text-blue-400" />
                                 <span>Copy</span>
                               </>
                             )}
@@ -1297,14 +1330,14 @@ export default function MasterConsolidatedView({
               </table>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-[#8e8e93]">
+            <div className="pt-4 mt-4 border-t border-slate-800 flex items-center justify-between">
+              <span className="text-xs text-slate-400">
                 Registered Operating Entities ({companyAccounts.length})
               </span>
               <button
                 type="button"
                 onClick={() => setShowAccountsModal(false)}
-                className="px-5 py-2 rounded-xl bg-[#0a84ff] text-white text-xs font-semibold hover:bg-[#0a84ff]/90 transition-all cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-500 transition-all cursor-pointer shadow-lg shadow-blue-600/20"
               >
                 Close Directory
               </button>

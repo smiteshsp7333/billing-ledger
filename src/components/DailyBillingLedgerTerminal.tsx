@@ -83,7 +83,7 @@ export default function DailyBillingLedgerTerminal() {
   const isOperator = currentUser.role === 'COMPANY_USER';
 
   return (
-    <div className="min-h-screen bg-black text-white antialiased pb-16 selection:bg-[#0a84ff] selection:text-white">
+    <div className="min-h-screen bg-[#070c18] text-slate-100 antialiased pb-16 selection:bg-[#0a84ff] selection:text-white">
       <ExecutiveHeader
         activeView={activeView}
         setActiveView={setActiveView}
